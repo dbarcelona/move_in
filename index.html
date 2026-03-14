@@ -15,12 +15,12 @@
 
         <!-- Navigation Tabs -->
         <div class="tabs">
-            <button class="tab-button active" onclick="showTab('todo')">📋 To-Do List</button>
-            <button class="tab-button" onclick="showTab('planner')">🏡 Space Planner</button>
+            <button class="tab-button" onclick="showTab('todo')">📋 To-Do List</button>
+            <button class="tab-button active" onclick="showTab('planner')">🏡 Space Planner</button>
         </div>
 
         <!-- To-Do List Section -->
-        <div id="todo-section" class="tab-content active">
+        <div id="todo-section" class="tab-content">
             <div class="add-task-form">
                 <h2>Add New Task</h2>
                 <input type="text" id="task-input" placeholder="What needs to be done?">
@@ -55,7 +55,7 @@
         </div>
 
         <!-- Space Planner Section -->
-        <div id="planner-section" class="tab-content">
+        <div id="planner-section" class="tab-content active">
             <div class="planner-controls">
                 <h2>Floor Plan & Furniture Planner</h2>
                 <p style="color: #666; margin-bottom: 15px;">Drag furniture to plan your space • Double-click to remove items</p>
