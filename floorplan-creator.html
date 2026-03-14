@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Floor Plan Creator - Move In Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        header h1 {
+            color: #333;
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+        }
+
+        .toolbar {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .toolbar button {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        .toolbar button:hover {
+            background: #5568d3;
+        }
+
+        .toolbar button.active {
+            background: #ff6b6b;
+        }
+
+        .toolbar input {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+
+        .canvas-container {
+            border: 3px solid #667eea;
+            border-radius: 10px;
+            overflow: hidden;
+            background: white;
+            position: relative;
+        }
+
+        #canvas {
+            width: 100%;
+            height: 700px;
+            background: #f5f5f5;
+            background-image:
+                linear-gradient(rgba(102, 126, 234, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(102, 126, 234, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            position: relative;
+            cursor: crosshair;
+        }
+
+        .room-box {
+            position: absolute;
+            border: 2px solid #333;
+            background: rgba(255, 255, 255, 0.9);
+            cursor: move;
+            min-width: 40px;
+            min-height: 40px;
+        }
+
+        .room-box.selected {
+            border: 3px solid #667eea;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+        }
+
+        .room-label {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            right: 5px;
+            font-weight: bold;
+            color: #333;
+            font-size: 0.9em;
+            text-align: center;
+            pointer-events: none;
+            word-wrap: break-word;
+        }
+
+        .resize-handle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #667eea;
+            border: 2px solid white;
+            border-radius: 50%;
+        }
+
+        .resize-handle.nw { top: -5px; left: -5px; cursor: nw-resize; }
+        .resize-handle.ne { top: -5px; right: -5px; cursor: ne-resize; }
+        .resize-handle.sw { bottom: -5px; left: -5px; cursor: sw-resize; }
+        .resize-handle.se { bottom: -5px; right: -5px; cursor: se-resize; }
+
+        .instructions {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .instructions h3 {
+            margin-bottom: 10px;
+            color: #1976d2;
+        }
+
+        .instructions ul {
+            margin-left: 20px;
+        }
+
+        .instructions li {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">← Back to Move-In Tracker</a>
+
+        <header>
+            <h1>🏠 Floor Plan Creator</h1>
+            <p>Draw your apartment layout</p>
+        </header>
+
+        <div class="toolbar">
+            <button id="draw-mode" class="active">✏️ Draw Room</button>
+            <button id="select-mode">👆 Select/Move</button>
+            <input type="text" id="room-name" placeholder="Room name (e.g., Kitchen)" value="Room">
+            <button id="delete-room">🗑️ Delete Selected</button>
+            <button id="clear-all">🧹 Clear All</button>
+            <button id="save-plan">💾 Save Plan</button>
+        </div>
+
+        <div class="canvas-container">
+            <div id="canvas"></div>
+        </div>
+
+        <div class="instructions">
+            <h3>How to Use:</h3>
+            <ul>
+                <li><strong>Draw Room:</strong> Click and drag to create a room box</li>
+                <li><strong>Select/Move:</strong> Click to select a room, drag to move it</li>
+                <li><strong>Resize:</strong> Drag the corner handles of a selected room</li>
+                <li><strong>Label:</strong> Type a name in the text box before drawing</li>
+                <li><strong>Delete:</strong> Select a room and click "Delete Selected"</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const drawModeBtn = document.getElementById('draw-mode');
+        const selectModeBtn = document.getElementById('select-mode');
+        const roomNameInput = document.getElementById('room-name');
+        const deleteBtn = document.getElementById('delete-room');
+        const clearBtn = document.getElementById('clear-all');
+        const saveBtn = document.getElementById('save-plan');
+
+        let mode = 'draw'; // 'draw' or 'select'
+        let isDrawing = false;
+        let isDragging = false;
+        let isResizing = false;
+        let startX, startY;
+        let currentBox = null;
+        let selectedBox = null;
+        let resizeHandle = null;
+        let rooms = [];
+
+        // Mode switching
+        drawModeBtn.addEventListener('click', () => {
+            mode = 'draw';
+            canvas.style.cursor = 'crosshair';
+            drawModeBtn.classList.add('active');
+            selectModeBtn.classList.remove('active');
+            deselectAll();
+        });
+
+        selectModeBtn.addEventListener('click', () => {
+            mode = 'select';
+            canvas.style.cursor = 'default';
+            selectModeBtn.classList.add('active');
+            drawModeBtn.classList.remove('active');
+        });
+
+        // Mouse down
+        canvas.addEventListener('mousedown', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            startX = e.clientX - rect.left;
+            startY = e.clientY - rect.top;
+
+            if (mode === 'draw') {
+                isDrawing = true;
+                const roomName = roomNameInput.value || 'Room';
+
+                currentBox = document.createElement('div');
+                currentBox.className = 'room-box';
+                currentBox.style.left = startX + 'px';
+                currentBox.style.top = startY + 'px';
+                currentBox.style.width = '0px';
+                currentBox.style.height = '0px';
+
+                const label = document.createElement('div');
+                label.className = 'room-label';
+                label.textContent = roomName;
+                currentBox.appendChild(label);
+
+                canvas.appendChild(currentBox);
+            } else if (mode === 'select') {
+                const clickedBox = e.target.closest('.room-box');
+                if (clickedBox) {
+                    selectBox(clickedBox);
+                    if (e.target.classList.contains('resize-handle')) {
+                        isResizing = true;
+                        resizeHandle = e.target.className.split(' ')[1];
+                    } else {
+                        isDragging = true;
+                    }
+                } else {
+                    deselectAll();
+                }
+            }
+        });
+
+        // Mouse move
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const currentX = e.clientX - rect.left;
+            const currentY = e.clientY - rect.top;
+
+            if (isDrawing && currentBox) {
+                const width = currentX - startX;
+                const height = currentY - startY;
+
+                currentBox.style.width = Math.abs(width) + 'px';
+                currentBox.style.height = Math.abs(height) + 'px';
+
+                if (width < 0) currentBox.style.left = currentX + 'px';
+                if (height < 0) currentBox.style.top = currentY + 'px';
+            } else if (isDragging && selectedBox) {
+                const deltaX = currentX - startX;
+                const deltaY = currentY - startY;
+
+                const left = parseInt(selectedBox.style.left) + deltaX;
+                const top = parseInt(selectedBox.style.top) + deltaY;
+
+                selectedBox.style.left = Math.max(0, left) + 'px';
+                selectedBox.style.top = Math.max(0, top) + 'px';
+
+                startX = currentX;
+                startY = currentY;
+            } else if (isResizing && selectedBox) {
+                const box = selectedBox.getBoundingClientRect();
+                const canvasRect = canvas.getBoundingClientRect();
+                const relX = box.left - canvasRect.left;
+                const relY = box.top - canvasRect.top;
+
+                if (resizeHandle === 'se') {
+                    selectedBox.style.width = Math.max(40, currentX - relX) + 'px';
+                    selectedBox.style.height = Math.max(40, currentY - relY) + 'px';
+                } else if (resizeHandle === 'sw') {
+                    const newWidth = Math.max(40, relX + box.width - currentX);
+                    selectedBox.style.width = newWidth + 'px';
+                    selectedBox.style.left = (relX + box.width - newWidth) + 'px';
+                    selectedBox.style.height = Math.max(40, currentY - relY) + 'px';
+                } else if (resizeHandle === 'ne') {
+                    selectedBox.style.width = Math.max(40, currentX - relX) + 'px';
+                    const newHeight = Math.max(40, relY + box.height - currentY);
+                    selectedBox.style.height = newHeight + 'px';
+                    selectedBox.style.top = (relY + box.height - newHeight) + 'px';
+                } else if (resizeHandle === 'nw') {
+                    const newWidth = Math.max(40, relX + box.width - currentX);
+                    const newHeight = Math.max(40, relY + box.height - currentY);
+                    selectedBox.style.width = newWidth + 'px';
+                    selectedBox.style.height = newHeight + 'px';
+                    selectedBox.style.left = (relX + box.width - newWidth) + 'px';
+                    selectedBox.style.top = (relY + box.height - newHeight) + 'px';
+                }
+            }
+        });
+
+        // Mouse up
+        document.addEventListener('mouseup', () => {
+            if (isDrawing && currentBox) {
+                if (parseInt(currentBox.style.width) < 40 || parseInt(currentBox.style.height) < 40) {
+                    currentBox.remove();
+                } else {
+                    rooms.push(currentBox);
+                }
+                currentBox = null;
+            }
+            isDrawing = false;
+            isDragging = false;
+            isResizing = false;
+            resizeHandle = null;
+        });
+
+        function selectBox(box) {
+            deselectAll();
+            selectedBox = box;
+            box.classList.add('selected');
+
+            // Add resize handles
+            ['nw', 'ne', 'sw', 'se'].forEach(pos => {
+                const handle = document.createElement('div');
+                handle.className = `resize-handle ${pos}`;
+                box.appendChild(handle);
+            });
+        }
+
+        function deselectAll() {
+            if (selectedBox) {
+                selectedBox.classList.remove('selected');
+                selectedBox.querySelectorAll('.resize-handle').forEach(h => h.remove());
+                selectedBox = null;
+            }
+        }
+
+        // Delete selected room
+        deleteBtn.addEventListener('click', () => {
+            if (selectedBox) {
+                selectedBox.remove();
+                rooms = rooms.filter(r => r !== selectedBox);
+                selectedBox = null;
+            }
+        });
+
+        // Clear all
+        clearBtn.addEventListener('click', () => {
+            if (confirm('Clear all rooms?')) {
+                rooms.forEach(r => r.remove());
+                rooms = [];
+                selectedBox = null;
+            }
+        });
+
+        // Save plan
+        saveBtn.addEventListener('click', () => {
+            const plan = rooms.map(room => ({
+                label: room.querySelector('.room-label').textContent,
+                left: room.style.left,
+                top: room.style.top,
+                width: room.style.width,
+                height: room.style.height
+            }));
+
+            localStorage.setItem('customFloorPlan', JSON.stringify(plan));
+            alert('Floor plan saved! You can now use this in the main app.');
+        });
+
+        // Load saved plan
+        window.onload = () => {
+            const saved = localStorage.getItem('customFloorPlan');
+            if (saved) {
+                const plan = JSON.parse(saved);
+                plan.forEach(data => {
+                    const box = document.createElement('div');
+                    box.className = 'room-box';
+                    box.style.left = data.left;
+                    box.style.top = data.top;
+                    box.style.width = data.width;
+                    box.style.height = data.height;
+
+                    const label = document.createElement('div');
+                    label.className = 'room-label';
+                    label.textContent = data.label;
+                    box.appendChild(label);
+
+                    canvas.appendChild(box);
+                    rooms.push(box);
+                });
+            }
+        };
+    </script>
+</body>
+</html>
