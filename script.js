@@ -3,15 +3,31 @@
 let tasks = [];
 let floorPlanDrawn = false; // Track if floor plan has been drawn
 
+console.log('Script loaded!'); // DEBUG
+
 // Load saved data when the page loads
 // localStorage is browser storage that persists even after closing the page
 window.onload = function() {
+    console.log('window.onload fired!'); // DEBUG
     loadTasks();
     renderTasks();
     // Draw floor plan since Space Planner is default tab
     drawFloorPlan();
     loadFurniture();
 };
+
+// Backup: Use DOMContentLoaded as well
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOMContentLoaded fired!'); // DEBUG
+    // Short delay to ensure DOM is fully ready
+    setTimeout(function() {
+        if (!floorPlanDrawn) {
+            console.log('Drawing floor plan via DOMContentLoaded backup');
+            drawFloorPlan();
+            loadFurniture();
+        }
+    }, 100);
+});
 
 // Function to switch between tabs (To-Do List and Space Planner)
 function showTab(tabName) {
