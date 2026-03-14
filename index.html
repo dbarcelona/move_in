@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lakeside Move-In Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏠 Lakeside Move-In Tracker</h1>
+            <p>Oakland, California</p>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <div class="tabs">
+            <button class="tab-button active" onclick="showTab('todo')">📋 To-Do List</button>
+            <button class="tab-button" onclick="showTab('planner')">🏡 Space Planner</button>
+        </div>
+
+        <!-- To-Do List Section -->
+        <div id="todo-section" class="tab-content active">
+            <div class="add-task-form">
+                <h2>Add New Task</h2>
+                <input type="text" id="task-input" placeholder="What needs to be done?">
+                <select id="category-select">
+                    <option value="Packing">📦 Packing</option>
+                    <option value="Utilities">⚡ Utilities</option>
+                    <option value="Cleaning">🧹 Cleaning</option>
+                    <option value="Moving">🚚 Moving</option>
+                    <option value="Shopping">🛒 Shopping</option>
+                    <option value="Other">📝 Other</option>
+                </select>
+                <input type="date" id="due-date-input">
+                <button onclick="addTask()">Add Task</button>
+            </div>
+
+            <div class="filter-section">
+                <label>Filter by category:</label>
+                <select id="filter-category" onchange="filterTasks()">
+                    <option value="All">All Categories</option>
+                    <option value="Packing">📦 Packing</option>
+                    <option value="Utilities">⚡ Utilities</option>
+                    <option value="Cleaning">🧹 Cleaning</option>
+                    <option value="Moving">🚚 Moving</option>
+                    <option value="Shopping">🛒 Shopping</option>
+                    <option value="Other">📝 Other</option>
+                </select>
+            </div>
+
+            <div class="tasks-container" id="tasks-list">
+                <!-- Tasks will be added here dynamically -->
+            </div>
+        </div>
+
+        <!-- Space Planner Section -->
+        <div id="planner-section" class="tab-content">
+            <div class="planner-controls">
+                <h2>Space Planner</h2>
+                <p>Click and drag items to plan your layout</p>
+                <div class="furniture-palette">
+                    <button onclick="addFurniture('bed')">🛏️ Bed</button>
+                    <button onclick="addFurniture('sofa')">🛋️ Sofa</button>
+                    <button onclick="addFurniture('table')">🪑 Table</button>
+                    <button onclick="addFurniture('desk')">🖥️ Desk</button>
+                    <button onclick="addFurniture('shelf')">📚 Shelf</button>
+                    <button onclick="clearRoom()">🗑️ Clear Room</button>
+                </div>
+            </div>
+            <div class="room-canvas" id="room-canvas">
+                <!-- Furniture items will be placed here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

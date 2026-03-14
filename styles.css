@@ -1,0 +1,309 @@
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+/* Header */
+header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 3px solid #667eea;
+}
+
+header h1 {
+    color: #333;
+    font-size: 2.5em;
+    margin-bottom: 10px;
+}
+
+header p {
+    color: #666;
+    font-size: 1.2em;
+}
+
+/* Tabs */
+.tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 30px;
+}
+
+.tab-button {
+    flex: 1;
+    padding: 15px;
+    background: #f0f0f0;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.1em;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.tab-button:hover {
+    background: #e0e0e0;
+}
+
+.tab-button.active {
+    background: #667eea;
+    color: white;
+}
+
+/* Tab Content */
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* Add Task Form */
+.add-task-form {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.add-task-form h2 {
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.add-task-form input,
+.add-task-form select,
+.add-task-form button {
+    padding: 12px;
+    margin: 5px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 1em;
+}
+
+.add-task-form input[type="text"] {
+    width: calc(100% - 10px);
+}
+
+.add-task-form button {
+    background: #667eea;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s;
+}
+
+.add-task-form button:hover {
+    background: #5568d3;
+}
+
+/* Filter Section */
+.filter-section {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #f0f0f0;
+    border-radius: 8px;
+}
+
+.filter-section label {
+    margin-right: 10px;
+    font-weight: bold;
+}
+
+.filter-section select {
+    padding: 8px;
+    border-radius: 5px;
+    border: 2px solid #ddd;
+}
+
+/* Tasks Container */
+.tasks-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.task-item {
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    transition: all 0.3s;
+}
+
+.task-item:hover {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.task-item.completed {
+    opacity: 0.6;
+    background: #f0f0f0;
+}
+
+.task-item.completed .task-text {
+    text-decoration: line-through;
+}
+
+.task-checkbox {
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+}
+
+.task-content {
+    flex: 1;
+}
+
+.task-text {
+    font-size: 1.1em;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.task-meta {
+    display: flex;
+    gap: 15px;
+    font-size: 0.9em;
+    color: #666;
+}
+
+.task-category {
+    background: #667eea;
+    color: white;
+    padding: 3px 10px;
+    border-radius: 15px;
+    font-size: 0.85em;
+}
+
+.task-due {
+    color: #ff6b6b;
+    font-weight: bold;
+}
+
+.task-delete {
+    background: #ff6b6b;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.task-delete:hover {
+    background: #ff5252;
+}
+
+/* Space Planner */
+.planner-controls {
+    margin-bottom: 20px;
+}
+
+.planner-controls h2 {
+    margin-bottom: 10px;
+}
+
+.furniture-palette {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 15px;
+}
+
+.furniture-palette button {
+    padding: 10px 20px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background 0.3s;
+}
+
+.furniture-palette button:hover {
+    background: #5568d3;
+}
+
+.furniture-palette button:last-child {
+    background: #ff6b6b;
+}
+
+.furniture-palette button:last-child:hover {
+    background: #ff5252;
+}
+
+.room-canvas {
+    position: relative;
+    background: #fff;
+    border: 3px solid #667eea;
+    border-radius: 10px;
+    height: 500px;
+    overflow: hidden;
+    background-image:
+        linear-gradient(rgba(102, 126, 234, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(102, 126, 234, 0.1) 1px, transparent 1px);
+    background-size: 50px 50px;
+}
+
+.furniture-item {
+    position: absolute;
+    padding: 15px 25px;
+    background: #667eea;
+    color: white;
+    border-radius: 8px;
+    cursor: move;
+    font-size: 1.2em;
+    user-select: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: transform 0.1s;
+}
+
+.furniture-item:hover {
+    transform: scale(1.05);
+}
+
+.furniture-item:active {
+    cursor: grabbing;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+    }
+
+    header h1 {
+        font-size: 1.8em;
+    }
+
+    .tabs {
+        flex-direction: column;
+    }
+
+    .furniture-palette {
+        flex-direction: column;
+    }
+}
