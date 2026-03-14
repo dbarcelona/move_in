@@ -148,6 +148,20 @@
             word-wrap: break-word;
         }
 
+        .dimensions-label {
+            position: absolute;
+            bottom: 5px;
+            left: 5px;
+            right: 5px;
+            font-size: 0.75em;
+            color: #667eea;
+            text-align: center;
+            pointer-events: none;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 2px;
+            border-radius: 3px;
+        }
+
         .resize-handle {
             position: absolute;
             width: 10px;
@@ -250,6 +264,19 @@
             </div>
 
             <div class="toolbar-group">
+                <button id="align-width">↔️ Match Width</button>
+                <button id="align-height">↕️ Match Height</button>
+                <input type="number" id="set-width" placeholder="Width (px)" style="width: 100px;">
+                <input type="number" id="set-height" placeholder="Height (px)" style="width: 100px;">
+                <button id="apply-size">Apply Size</button>
+            </div>
+
+            <div class="toolbar-group">
+                <button id="undo">↶ Undo</button>
+                <button id="redo">↷ Redo</button>
+            </div>
+
+            <div class="toolbar-group">
                 <button id="delete-item">🗑️ Delete</button>
                 <button id="clear-all">🧹 Clear All</button>
                 <button id="save-plan">💾 Save</button>
@@ -264,11 +291,14 @@
             <h3>How to Use:</h3>
             <ul>
                 <li><strong>Draw Room:</strong> Click and drag to create room (auto-snaps to grid)</li>
-                <li><strong>Doors:</strong> Click door mode, then click on room edge to add door (36" wide)</li>
-                <li><strong>Windows:</strong> Click window mode, then click on room edge to add window</li>
+                <li><strong>Doors/Windows:</strong> Click mode, then click on room edge to place</li>
+                <li><strong>Align:</strong> Select room A, then room B, then click "Match Width" or "Match Height"</li>
+                <li><strong>Exact Size:</strong> Select room, enter dimensions, click "Apply Size"</li>
+                <li><strong>Move:</strong> Select room and use arrow keys OR drag with mouse</li>
                 <li><strong>Zoom:</strong> Use 🔍+/- to change grid size (10px, 20px, 40px)</li>
-                <li><strong>Furniture Blocking:</strong> Doors create no-furniture zones (realistic swing area)</li>
-                <li><strong>Delete:</strong> Select item and click Delete button</li>
+                <li><strong>Undo/Redo:</strong> Click buttons or use Ctrl+Z / Ctrl+Y (Cmd on Mac)</li>
+                <li><strong>Delete:</strong> Select item and press Delete key or click button</li>
+                <li><strong>Dimensions:</strong> Shown on selected rooms (width × height in pixels)</li>
             </ul>
         </div>
     </div>
@@ -286,6 +316,13 @@
         const zoomInBtn = document.getElementById('zoom-in');
         const zoomOutBtn = document.getElementById('zoom-out');
         const zoomLevelSpan = document.getElementById('zoom-level');
+        const alignWidthBtn = document.getElementById('align-width');
+        const alignHeightBtn = document.getElementById('align-height');
+        const setWidthInput = document.getElementById('set-width');
+        const setHeightInput = document.getElementById('set-height');
+        const applySizeBtn = document.getElementById('apply-size');
+        const undoBtn = document.getElementById('undo');
+        const redoBtn = document.getElementById('redo');
 
         let mode = 'draw'; // 'draw', 'select', 'door', 'window'
         let gridSize = 20; // Current grid size
@@ -301,6 +338,9 @@
         let rooms = [];
         let doors = [];
         let windows = [];
+        let history = [];
+        let historyIndex = -1;
+        let lastSelectedForAlign = null;
 
         // Initialize canvas size
         function updateCanvasSize() {
@@ -487,9 +527,15 @@
                     currentBox.remove();
                 } else {
                     rooms.push(currentBox);
+                    saveToHistory();
                 }
                 currentBox = null;
             }
+
+            if (isDragging || isResizing) {
+                saveToHistory();
+            }
+
             isDrawing = false;
             isDragging = false;
             isResizing = false;
@@ -523,6 +569,7 @@
 
             canvas.appendChild(door);
             doors.push(door);
+            saveToHistory();
         }
 
         function placeWindow(e) {
@@ -551,6 +598,7 @@
 
             canvas.appendChild(win);
             windows.push(win);
+            saveToHistory();
         }
 
         function findNearestRoomEdge(x, y) {
@@ -584,6 +632,11 @@
         }
 
         function selectItem(item, type) {
+            // Save previous selection for alignment
+            if (selectedItem && selectedItem.classList.contains('room-box')) {
+                lastSelectedForAlign = selectedItem;
+            }
+
             deselectAll();
             selectedItem = item;
             item.classList.add('selected');
@@ -595,6 +648,9 @@
                     handle.className = `resize-handle ${pos}`;
                     item.appendChild(handle);
                 });
+
+                // Show dimensions
+                updateDimensionsDisplay();
             }
         }
 
@@ -602,6 +658,7 @@
             if (selectedItem) {
                 selectedItem.classList.remove('selected');
                 selectedItem.querySelectorAll('.resize-handle').forEach(h => h.remove());
+                selectedItem.querySelectorAll('.dimensions-label').forEach(d => d.remove());
                 selectedItem = null;
             }
         }
@@ -627,6 +684,225 @@
                 doors = [];
                 windows = [];
                 selectedItem = null;
+            }
+        });
+
+        // History system
+        function saveToHistory() {
+            const state = {
+                rooms: rooms.map(r => ({
+                    label: r.querySelector('.room-label').textContent,
+                    left: r.style.left,
+                    top: r.style.top,
+                    width: r.style.width,
+                    height: r.style.height
+                })),
+                doors: doors.map(d => ({
+                    left: d.style.left,
+                    top: d.style.top,
+                    width: d.style.width || '6px',
+                    height: d.style.height || '6px',
+                    orientation: d.classList.contains('horizontal') ? 'horizontal' : 'vertical'
+                })),
+                windows: windows.map(w => ({
+                    left: w.style.left,
+                    top: w.style.top,
+                    width: w.style.width || '6px',
+                    height: w.style.height || '6px',
+                    orientation: w.classList.contains('horizontal') ? 'horizontal' : 'vertical'
+                }))
+            };
+
+            // Remove future history if we're not at the end
+            if (historyIndex < history.length - 1) {
+                history = history.slice(0, historyIndex + 1);
+            }
+
+            history.push(state);
+            historyIndex++;
+
+            // Limit history to 50 states
+            if (history.length > 50) {
+                history.shift();
+                historyIndex--;
+            }
+        }
+
+        function restoreFromHistory(state) {
+            // Clear current
+            rooms.forEach(r => r.remove());
+            doors.forEach(d => d.remove());
+            windows.forEach(w => w.remove());
+            rooms = [];
+            doors = [];
+            windows = [];
+
+            // Restore rooms
+            state.rooms.forEach(data => {
+                const box = document.createElement('div');
+                box.className = 'room-box';
+                box.style.left = data.left;
+                box.style.top = data.top;
+                box.style.width = data.width;
+                box.style.height = data.height;
+
+                const label = document.createElement('div');
+                label.className = 'room-label';
+                label.textContent = data.label;
+                box.appendChild(label);
+
+                canvas.appendChild(box);
+                rooms.push(box);
+            });
+
+            // Restore doors
+            state.doors.forEach(data => {
+                const door = document.createElement('div');
+                door.className = 'door';
+                door.classList.add(data.orientation);
+                door.style.left = data.left;
+                door.style.top = data.top;
+                if (data.orientation === 'horizontal') {
+                    door.style.width = data.width;
+                } else {
+                    door.style.height = data.height;
+                }
+                canvas.appendChild(door);
+                doors.push(door);
+            });
+
+            // Restore windows
+            state.windows.forEach(data => {
+                const win = document.createElement('div');
+                win.className = 'window';
+                win.classList.add(data.orientation);
+                win.style.left = data.left;
+                win.style.top = data.top;
+                if (data.orientation === 'horizontal') {
+                    win.style.width = data.width;
+                } else {
+                    win.style.height = data.height;
+                }
+                canvas.appendChild(win);
+                windows.push(win);
+            });
+        }
+
+        // Undo/Redo
+        undoBtn.addEventListener('click', () => {
+            if (historyIndex > 0) {
+                historyIndex--;
+                restoreFromHistory(history[historyIndex]);
+            }
+        });
+
+        redoBtn.addEventListener('click', () => {
+            if (historyIndex < history.length - 1) {
+                historyIndex++;
+                restoreFromHistory(history[historyIndex]);
+            }
+        });
+
+        // Align tools
+        alignWidthBtn.addEventListener('click', () => {
+            if (selectedItem && lastSelectedForAlign && selectedItem.classList.contains('room-box') && lastSelectedForAlign.classList.contains('room-box')) {
+                selectedItem.style.width = lastSelectedForAlign.style.width;
+                updateDimensionsDisplay();
+                saveToHistory();
+            }
+        });
+
+        alignHeightBtn.addEventListener('click', () => {
+            if (selectedItem && lastSelectedForAlign && selectedItem.classList.contains('room-box') && lastSelectedForAlign.classList.contains('room-box')) {
+                selectedItem.style.height = lastSelectedForAlign.style.height;
+                updateDimensionsDisplay();
+                saveToHistory();
+            }
+        });
+
+        applySizeBtn.addEventListener('click', () => {
+            if (selectedItem && selectedItem.classList.contains('room-box')) {
+                const width = parseInt(setWidthInput.value);
+                const height = parseInt(setHeightInput.value);
+
+                if (width && width >= gridSize * 2) {
+                    selectedItem.style.width = snapToGrid(width) + 'px';
+                }
+                if (height && height >= gridSize * 2) {
+                    selectedItem.style.height = snapToGrid(height) + 'px';
+                }
+
+                updateDimensionsDisplay();
+                saveToHistory();
+            }
+        });
+
+        // Update dimensions display
+        function updateDimensionsDisplay() {
+            if (selectedItem && selectedItem.classList.contains('room-box')) {
+                let dimLabel = selectedItem.querySelector('.dimensions-label');
+                if (!dimLabel) {
+                    dimLabel = document.createElement('div');
+                    dimLabel.className = 'dimensions-label';
+                    selectedItem.appendChild(dimLabel);
+                }
+
+                const width = parseInt(selectedItem.style.width);
+                const height = parseInt(selectedItem.style.height);
+                dimLabel.textContent = `${width} × ${height}px`;
+
+                // Update input fields
+                setWidthInput.value = width;
+                setHeightInput.value = height;
+            }
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Delete key
+            if (e.key === 'Delete' && selectedItem) {
+                selectedItem.remove();
+                rooms = rooms.filter(r => r !== selectedItem);
+                doors = doors.filter(d => d !== selectedItem);
+                windows = windows.filter(w => w !== selectedItem);
+                saveToHistory();
+                selectedItem = null;
+            }
+
+            // Arrow keys for movement (when item selected)
+            if (selectedItem && selectedItem.classList.contains('room-box')) {
+                let moved = false;
+                const moveAmount = gridSize;
+
+                if (e.key === 'ArrowLeft') {
+                    selectedItem.style.left = Math.max(0, parseInt(selectedItem.style.left) - moveAmount) + 'px';
+                    moved = true;
+                } else if (e.key === 'ArrowRight') {
+                    selectedItem.style.left = (parseInt(selectedItem.style.left) + moveAmount) + 'px';
+                    moved = true;
+                } else if (e.key === 'ArrowUp') {
+                    selectedItem.style.top = Math.max(0, parseInt(selectedItem.style.top) - moveAmount) + 'px';
+                    moved = true;
+                } else if (e.key === 'ArrowDown') {
+                    selectedItem.style.top = (parseInt(selectedItem.style.top) + moveAmount) + 'px';
+                    moved = true;
+                }
+
+                if (moved) {
+                    e.preventDefault();
+                    saveToHistory();
+                }
+            }
+
+            // Undo/Redo shortcuts
+            if (e.ctrlKey || e.metaKey) {
+                if (e.key === 'z' && !e.shiftKey) {
+                    e.preventDefault();
+                    undoBtn.click();
+                } else if ((e.key === 'y') || (e.key === 'z' && e.shiftKey)) {
+                    e.preventDefault();
+                    redoBtn.click();
+                }
             }
         });
 
@@ -724,6 +1000,11 @@
                     canvas.appendChild(win);
                     windows.push(win);
                 });
+            }
+
+            // Save initial state to history
+            if (rooms.length > 0 || doors.length > 0 || windows.length > 0) {
+                saveToHistory();
             }
         };
     </script>
