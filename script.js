@@ -3,12 +3,9 @@
 let tasks = [];
 let floorPlanDrawn = false; // Track if floor plan has been drawn
 
-console.log('Script loaded!'); // DEBUG
-
 // Load saved data when the page loads
 // localStorage is browser storage that persists even after closing the page
 window.onload = function() {
-    console.log('window.onload fired!'); // DEBUG
     loadTasks();
     renderTasks();
     // Draw floor plan since Space Planner is default tab
@@ -18,11 +15,9 @@ window.onload = function() {
 
 // Backup: Use DOMContentLoaded as well
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOMContentLoaded fired!'); // DEBUG
     // Short delay to ensure DOM is fully ready
     setTimeout(function() {
         if (!floorPlanDrawn) {
-            console.log('Drawing floor plan via DOMContentLoaded backup');
             drawFloorPlan();
             loadFurniture();
         }
@@ -211,34 +206,14 @@ let offsetY = 0;
 function drawFloorPlan() {
     const plan = document.getElementById('room-canvas');
 
-    // Debug: Check if element exists
-    if (!plan) {
-        console.error('room-canvas element not found!');
-        return;
-    }
+    // Check if element exists
+    if (!plan) return;
 
     // Prevent double-drawing
     if (floorPlanDrawn) return;
 
     // Clear any existing content
     plan.innerHTML = '';
-
-    // Debug marker - remove after testing
-    console.log('Drawing floor plan...');
-
-    // VISIBLE DEBUG TEST - Big red box to confirm function runs
-    const testBox = document.createElement('div');
-    testBox.style.position = 'absolute';
-    testBox.style.left = '10px';
-    testBox.style.top = '10px';
-    testBox.style.width = '200px';
-    testBox.style.height = '100px';
-    testBox.style.background = 'red';
-    testBox.style.color = 'white';
-    testBox.style.padding = '20px';
-    testBox.style.zIndex = '999';
-    testBox.textContent = 'FLOOR PLAN FUNCTION RUNNING';
-    plan.appendChild(testBox);
 
     // Living Room / Dining Area (open concept) - Corner unit
     const livingRoom = document.createElement('div');
@@ -361,25 +336,6 @@ function drawFloorPlan() {
 
     // Mark floor plan as drawn
     floorPlanDrawn = true;
-
-    // DEBUG: Count how many children were added
-    console.log('Floor plan drawn! Total elements in room-canvas:', plan.children.length);
-    console.log('Room elements:', plan.querySelectorAll('.room').length);
-    console.log('Window elements:', plan.querySelectorAll('.window').length);
-
-    // DEBUG: Check container dimensions
-    const rect = plan.getBoundingClientRect();
-    console.log('room-canvas dimensions:', rect.width, 'x', rect.height);
-    console.log('room-canvas position:', 'top:', rect.top, 'left:', rect.left);
-
-    // DEBUG: Check first room element
-    const firstRoom = plan.querySelector('.room');
-    if (firstRoom) {
-        const roomRect = firstRoom.getBoundingClientRect();
-        console.log('First room position:', 'top:', roomRect.top, 'left:', roomRect.left);
-        console.log('First room size:', roomRect.width, 'x', roomRect.height);
-        console.log('First room computed style background:', window.getComputedStyle(firstRoom).backgroundColor);
-    }
 }
 
 // Function to add furniture with specified dimensions
