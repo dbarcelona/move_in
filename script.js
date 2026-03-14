@@ -366,6 +366,20 @@ function drawFloorPlan() {
     console.log('Floor plan drawn! Total elements in room-canvas:', plan.children.length);
     console.log('Room elements:', plan.querySelectorAll('.room').length);
     console.log('Window elements:', plan.querySelectorAll('.window').length);
+
+    // DEBUG: Check container dimensions
+    const rect = plan.getBoundingClientRect();
+    console.log('room-canvas dimensions:', rect.width, 'x', rect.height);
+    console.log('room-canvas position:', 'top:', rect.top, 'left:', rect.left);
+
+    // DEBUG: Check first room element
+    const firstRoom = plan.querySelector('.room');
+    if (firstRoom) {
+        const roomRect = firstRoom.getBoundingClientRect();
+        console.log('First room position:', 'top:', roomRect.top, 'left:', roomRect.left);
+        console.log('First room size:', roomRect.width, 'x', roomRect.height);
+        console.log('First room computed style background:', window.getComputedStyle(firstRoom).backgroundColor);
+    }
 }
 
 // Function to add furniture with specified dimensions
