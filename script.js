@@ -202,7 +202,7 @@ let draggedElement = null;
 let offsetX = 0;
 let offsetY = 0;
 
-// Draw the floor plan based on 1 Lakeside Dr #804
+// Draw the floor plan - uses custom layout from Floor Plan Creator
 function drawFloorPlan() {
     const plan = document.getElementById('room-canvas');
 
@@ -214,6 +214,42 @@ function drawFloorPlan() {
 
     // Clear any existing content
     plan.innerHTML = '';
+
+    // Try to load custom floor plan first
+    const customPlan = localStorage.getItem('customFloorPlan');
+    if (customPlan) {
+        drawCustomFloorPlan(plan, customPlan);
+        floorPlanDrawn = true;
+        return;
+    }
+
+    // Fallback to default layout if no custom plan
+    drawDefaultFloorPlan(plan);
+}
+
+// Draw custom floor plan from Floor Plan Creator
+function drawCustomFloorPlan(plan, customPlanJSON) {
+    const rooms = JSON.parse(customPlanJSON);
+
+    rooms.forEach(roomData => {
+        const room = document.createElement('div');
+        room.className = 'room';
+        room.style.left = roomData.left;
+        room.style.top = roomData.top;
+        room.style.width = roomData.width;
+        room.style.height = roomData.height;
+
+        const label = document.createElement('div');
+        label.className = 'room-label';
+        label.textContent = roomData.label;
+        room.appendChild(label);
+
+        plan.appendChild(room);
+    });
+}
+
+// Default floor plan (fallback)
+function drawDefaultFloorPlan(plan) {
 
     // Add buffer margin (20px from edges)
     const margin = 20;
@@ -378,6 +414,7 @@ function drawFloorPlan() {
     // Mark floor plan as drawn
     floorPlanDrawn = true;
 }
+// End of drawDefaultFloorPlan
 
 // Function to add furniture with specified dimensions
 function addFurniture(type, width, height) {
@@ -451,12 +488,11 @@ function drag(e) {
 
     // Apartment boundaries (exterior walls only - no room restrictions)
     // Can place any furniture anywhere inside the apartment
-    // Updated to match new floor plan with 20px margin/buffer
     const apartmentBounds = {
-        left: 20,  // Left buffer
-        top: 20,   // Top buffer
-        right: 590,  // Right wall of apartment
-        bottom: 620  // Bottom wall of apartment
+        left: 0,
+        top: 0,
+        right: canvasRect.width,
+        bottom: canvasRect.height
     };
 
     // Keep furniture inside apartment walls (can't go outside)
