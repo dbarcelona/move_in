@@ -361,6 +361,11 @@ function drawFloorPlan() {
 
     // Mark floor plan as drawn
     floorPlanDrawn = true;
+
+    // DEBUG: Count how many children were added
+    console.log('Floor plan drawn! Total elements in room-canvas:', plan.children.length);
+    console.log('Room elements:', plan.querySelectorAll('.room').length);
+    console.log('Window elements:', plan.querySelectorAll('.window').length);
 }
 
 // Function to add furniture with specified dimensions
