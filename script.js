@@ -283,6 +283,29 @@ function drawFloorPlan() {
     closet.style.background = '#e0e0e0';
     closet.innerHTML = '<div class="room-label">CLOSET</div>';
     plan.appendChild(closet);
+
+    // Add measurement grid markers (every 5ft ≈ 60px)
+    const gridSize = 60; // pixels per 5ft
+    const maxWidth = 750;
+    const maxHeight = 650;
+
+    // Horizontal measurement markers
+    for (let x = gridSize; x < maxWidth; x += gridSize) {
+        const marker = document.createElement('div');
+        marker.className = 'grid-marker-vertical';
+        marker.style.left = x + 'px';
+        marker.textContent = Math.round(x / 12) + 'ft'; // Approximate feet (60px ≈ 5ft)
+        plan.appendChild(marker);
+    }
+
+    // Vertical measurement markers
+    for (let y = gridSize; y < maxHeight; y += gridSize) {
+        const marker = document.createElement('div');
+        marker.className = 'grid-marker-horizontal';
+        marker.style.top = y + 'px';
+        marker.textContent = Math.round(y / 12) + 'ft';
+        plan.appendChild(marker);
+    }
 }
 
 // Function to add furniture with specified dimensions
@@ -355,9 +378,18 @@ function drag(e) {
     let newX = e.clientX - canvasRect.left - offsetX;
     let newY = e.clientY - canvasRect.top - offsetY;
 
-    // Keep furniture inside the canvas
-    newX = Math.max(0, Math.min(newX, canvasRect.width - draggedElement.offsetWidth));
-    newY = Math.max(0, Math.min(newY, canvasRect.height - draggedElement.offsetHeight));
+    // Apartment boundaries (exterior walls only - no room restrictions)
+    // Can place any furniture anywhere inside the apartment
+    const apartmentBounds = {
+        left: 0,
+        top: 0,
+        right: 750,  // Right wall of apartment
+        bottom: 650  // Bottom wall of apartment
+    };
+
+    // Keep furniture inside apartment walls (can't go outside)
+    newX = Math.max(apartmentBounds.left, Math.min(newX, apartmentBounds.right - draggedElement.offsetWidth));
+    newY = Math.max(apartmentBounds.top, Math.min(newY, apartmentBounds.bottom - draggedElement.offsetHeight));
 
     draggedElement.style.left = newX + 'px';
     draggedElement.style.top = newY + 'px';
