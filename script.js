@@ -1,14 +1,16 @@
 // This array stores all our tasks
 // In JavaScript, arrays are lists that hold multiple items
 let tasks = [];
+let floorPlanDrawn = false; // Track if floor plan has been drawn
 
 // Load saved data when the page loads
 // localStorage is browser storage that persists even after closing the page
 window.onload = function() {
     loadTasks();
+    renderTasks();
+    // Draw floor plan since Space Planner is default tab
     drawFloorPlan();
     loadFurniture();
-    renderTasks();
 };
 
 // Function to switch between tabs (To-Do List and Space Planner)
@@ -30,6 +32,11 @@ function showTab(tabName) {
     } else {
         document.getElementById('planner-section').classList.add('active');
         document.querySelectorAll('.tab-button')[1].classList.add('active');
+        // Draw floor plan if not already drawn
+        if (!floorPlanDrawn) {
+            drawFloorPlan();
+            loadFurniture();
+        }
     }
 }
 
@@ -188,6 +195,12 @@ let offsetY = 0;
 function drawFloorPlan() {
     const plan = document.getElementById('room-canvas');
 
+    // Prevent double-drawing
+    if (floorPlanDrawn) return;
+
+    // Clear any existing content
+    plan.innerHTML = '';
+
     // Living Room / Dining Area (open concept) - Corner unit
     const livingRoom = document.createElement('div');
     livingRoom.className = 'room';
@@ -306,6 +319,9 @@ function drawFloorPlan() {
         marker.textContent = Math.round(y / 12) + 'ft';
         plan.appendChild(marker);
     }
+
+    // Mark floor plan as drawn
+    floorPlanDrawn = true;
 }
 
 // Function to add furniture with specified dimensions
