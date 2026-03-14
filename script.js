@@ -231,6 +231,7 @@ function drawFloorPlan() {
 function drawCustomFloorPlan(plan, customPlanJSON) {
     const rooms = JSON.parse(customPlanJSON);
 
+    // Draw rooms
     rooms.forEach(roomData => {
         const room = document.createElement('div');
         room.className = 'room';
@@ -246,6 +247,46 @@ function drawCustomFloorPlan(plan, customPlanJSON) {
 
         plan.appendChild(room);
     });
+
+    // Draw doors
+    const savedDoors = localStorage.getItem('customDoors');
+    if (savedDoors) {
+        const doors = JSON.parse(savedDoors);
+        doors.forEach(doorData => {
+            const door = document.createElement('div');
+            door.className = 'door';
+            door.style.left = doorData.left;
+            door.style.top = doorData.top;
+            if (doorData.orientation === 'horizontal') {
+                door.style.width = doorData.width;
+                door.style.height = '6px';
+            } else {
+                door.style.width = '6px';
+                door.style.height = doorData.height;
+            }
+            plan.appendChild(door);
+        });
+    }
+
+    // Draw windows
+    const savedWindows = localStorage.getItem('customWindows');
+    if (savedWindows) {
+        const windows = JSON.parse(savedWindows);
+        windows.forEach(winData => {
+            const win = document.createElement('div');
+            win.className = 'window';
+            win.style.left = winData.left;
+            win.style.top = winData.top;
+            if (winData.orientation === 'horizontal') {
+                win.style.width = winData.width;
+                win.style.height = '10px';
+            } else {
+                win.style.width = '10px';
+                win.style.height = winData.height;
+            }
+            plan.appendChild(win);
+        });
+    }
 }
 
 // Default floor plan (fallback)
@@ -499,8 +540,52 @@ function drag(e) {
     newX = Math.max(apartmentBounds.left, Math.min(newX, apartmentBounds.right - draggedElement.offsetWidth));
     newY = Math.max(apartmentBounds.top, Math.min(newY, apartmentBounds.bottom - draggedElement.offsetHeight));
 
+    // Check for door collisions (warning system - visual feedback)
+    const wouldCollide = checkDoorCollision(newX, newY, draggedElement.offsetWidth, draggedElement.offsetHeight);
+
+    if (wouldCollide) {
+        // Visual warning: add red border
+        draggedElement.style.border = '3px solid #ff6b6b';
+    } else {
+        // Normal: remove warning border
+        draggedElement.style.border = '';
+    }
+
     draggedElement.style.left = newX + 'px';
     draggedElement.style.top = newY + 'px';
+}
+
+// Check if furniture would collide with doors
+function checkDoorCollision(furnitureX, furnitureY, furnitureWidth, furnitureHeight) {
+    const doors = document.querySelectorAll('.door');
+
+    for (let door of doors) {
+        const doorRect = {
+            left: parseInt(door.style.left),
+            top: parseInt(door.style.top),
+            width: parseInt(door.style.width) || 6,
+            height: parseInt(door.style.height) || 6
+        };
+
+        // Add door swing area (36" radius from door)
+        const swingArea = 60; // pixels
+        const expandedDoor = {
+            left: doorRect.left - swingArea,
+            top: doorRect.top - swingArea,
+            right: doorRect.left + doorRect.width + swingArea,
+            bottom: doorRect.top + doorRect.height + swingArea
+        };
+
+        // Check collision with expanded door area
+        if (!(furnitureX + furnitureWidth < expandedDoor.left ||
+              furnitureX > expandedDoor.right ||
+              furnitureY + furnitureHeight < expandedDoor.top ||
+              furnitureY > expandedDoor.bottom)) {
+            return true; // Collision detected
+        }
+    }
+
+    return false; // No collision
 }
 
 // Stop dragging

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Floor Plan Creator - Move In Tracker</title>
+    <title>Floor Plan Creator v2 - Move In Tracker</title>
     <style>
         * {
             margin: 0;
@@ -19,7 +19,7 @@
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
             background: white;
             border-radius: 20px;
@@ -86,23 +86,38 @@
             font-size: 1em;
         }
 
+        .toolbar-group {
+            display: flex;
+            gap: 5px;
+            border-left: 2px solid #ddd;
+            padding-left: 10px;
+        }
+
+        .toolbar-group:first-child {
+            border-left: none;
+            padding-left: 0;
+        }
+
+        .zoom-info {
+            padding: 10px;
+            background: #e3f2fd;
+            border-radius: 5px;
+            font-size: 0.9em;
+            color: #1976d2;
+        }
+
         .canvas-container {
             border: 3px solid #667eea;
             border-radius: 10px;
-            overflow: hidden;
-            background: white;
+            overflow: auto;
+            background: #e0e0e0;
             position: relative;
+            height: 700px;
         }
 
         #canvas {
-            width: 100%;
-            height: 700px;
-            background: #f5f5f5;
-            background-image:
-                linear-gradient(rgba(102, 126, 234, 0.1) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(102, 126, 234, 0.1) 1px, transparent 1px);
-            background-size: 20px 20px;
             position: relative;
+            background: #f5f5f5;
             cursor: crosshair;
         }
 
@@ -147,6 +162,45 @@
         .resize-handle.sw { bottom: -5px; left: -5px; cursor: sw-resize; }
         .resize-handle.se { bottom: -5px; right: -5px; cursor: se-resize; }
 
+        .door {
+            position: absolute;
+            background: rgba(139, 69, 19, 0.3);
+            border: 2px solid #8B4513;
+            cursor: pointer;
+        }
+
+        .door.horizontal {
+            height: 6px;
+        }
+
+        .door.vertical {
+            width: 6px;
+        }
+
+        .door.selected {
+            border-color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.3);
+        }
+
+        .window {
+            position: absolute;
+            background: linear-gradient(90deg, #87CEEB 0%, #B0E0E6 100%);
+            border: 2px solid #4682B4;
+            cursor: pointer;
+        }
+
+        .window.horizontal {
+            height: 6px;
+        }
+
+        .window.vertical {
+            width: 6px;
+        }
+
+        .window.selected {
+            border-color: #667eea;
+        }
+
         .instructions {
             background: #e3f2fd;
             padding: 15px;
@@ -173,17 +227,33 @@
         <a href="index.html" class="back-link">← Back to Move-In Tracker</a>
 
         <header>
-            <h1>🏠 Floor Plan Creator</h1>
-            <p>Draw your apartment layout</p>
+            <h1>🏠 Floor Plan Creator v2</h1>
+            <p>Draw your apartment with doors, windows, and furniture blocking</p>
         </header>
 
         <div class="toolbar">
-            <button id="draw-mode" class="active">✏️ Draw Room</button>
-            <button id="select-mode">👆 Select/Move</button>
-            <input type="text" id="room-name" placeholder="Room name (e.g., Kitchen)" value="Room">
-            <button id="delete-room">🗑️ Delete Selected</button>
-            <button id="clear-all">🧹 Clear All</button>
-            <button id="save-plan">💾 Save Plan</button>
+            <div class="toolbar-group">
+                <button id="draw-mode" class="active">✏️ Draw Room</button>
+                <button id="select-mode">👆 Select</button>
+                <input type="text" id="room-name" placeholder="Room name" value="Room">
+            </div>
+
+            <div class="toolbar-group">
+                <button id="door-mode">🚪 Add Door</button>
+                <button id="window-mode">🪟 Add Window</button>
+            </div>
+
+            <div class="toolbar-group">
+                <button id="zoom-out">🔍-</button>
+                <span class="zoom-info" id="zoom-level">Grid: 20px</span>
+                <button id="zoom-in">🔍+</button>
+            </div>
+
+            <div class="toolbar-group">
+                <button id="delete-item">🗑️ Delete</button>
+                <button id="clear-all">🧹 Clear All</button>
+                <button id="save-plan">💾 Save</button>
+            </div>
         </div>
 
         <div class="canvas-container">
@@ -193,11 +263,12 @@
         <div class="instructions">
             <h3>How to Use:</h3>
             <ul>
-                <li><strong>Draw Room:</strong> Click and drag to create a room box</li>
-                <li><strong>Select/Move:</strong> Click to select a room, drag to move it</li>
-                <li><strong>Resize:</strong> Drag the corner handles of a selected room</li>
-                <li><strong>Label:</strong> Type a name in the text box before drawing</li>
-                <li><strong>Delete:</strong> Select a room and click "Delete Selected"</li>
+                <li><strong>Draw Room:</strong> Click and drag to create room (auto-snaps to grid)</li>
+                <li><strong>Doors:</strong> Click door mode, then click on room edge to add door (36" wide)</li>
+                <li><strong>Windows:</strong> Click window mode, then click on room edge to add window</li>
+                <li><strong>Zoom:</strong> Use 🔍+/- to change grid size (10px, 20px, 40px)</li>
+                <li><strong>Furniture Blocking:</strong> Doors create no-furniture zones (realistic swing area)</li>
+                <li><strong>Delete:</strong> Select item and click Delete button</li>
             </ul>
         </div>
     </div>
@@ -206,35 +277,95 @@
         const canvas = document.getElementById('canvas');
         const drawModeBtn = document.getElementById('draw-mode');
         const selectModeBtn = document.getElementById('select-mode');
+        const doorModeBtn = document.getElementById('door-mode');
+        const windowModeBtn = document.getElementById('window-mode');
         const roomNameInput = document.getElementById('room-name');
-        const deleteBtn = document.getElementById('delete-room');
+        const deleteBtn = document.getElementById('delete-item');
         const clearBtn = document.getElementById('clear-all');
         const saveBtn = document.getElementById('save-plan');
+        const zoomInBtn = document.getElementById('zoom-in');
+        const zoomOutBtn = document.getElementById('zoom-out');
+        const zoomLevelSpan = document.getElementById('zoom-level');
 
-        let mode = 'draw'; // 'draw' or 'select'
+        let mode = 'draw'; // 'draw', 'select', 'door', 'window'
+        let gridSize = 20; // Current grid size
+        let gridSizes = [10, 20, 40];
+        let currentZoomIndex = 1; // Start at 20px
         let isDrawing = false;
         let isDragging = false;
         let isResizing = false;
         let startX, startY;
         let currentBox = null;
-        let selectedBox = null;
+        let selectedItem = null;
         let resizeHandle = null;
         let rooms = [];
+        let doors = [];
+        let windows = [];
+
+        // Initialize canvas size
+        function updateCanvasSize() {
+            const size = 800 * (gridSize / 20); // Scale canvas with grid
+            canvas.style.width = size + 'px';
+            canvas.style.height = size + 'px';
+            updateGridBackground();
+        }
+
+        function updateGridBackground() {
+            canvas.style.backgroundImage = `
+                linear-gradient(rgba(102, 126, 234, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(102, 126, 234, 0.1) 1px, transparent 1px)
+            `;
+            canvas.style.backgroundSize = `${gridSize}px ${gridSize}px`;
+        }
+
+        // Snap to grid
+        function snapToGrid(value) {
+            return Math.round(value / gridSize) * gridSize;
+        }
 
         // Mode switching
-        drawModeBtn.addEventListener('click', () => {
-            mode = 'draw';
-            canvas.style.cursor = 'crosshair';
-            drawModeBtn.classList.add('active');
-            selectModeBtn.classList.remove('active');
+        function setMode(newMode) {
+            mode = newMode;
+            [drawModeBtn, selectModeBtn, doorModeBtn, windowModeBtn].forEach(btn => btn.classList.remove('active'));
+
+            if (newMode === 'draw') {
+                canvas.style.cursor = 'crosshair';
+                drawModeBtn.classList.add('active');
+            } else if (newMode === 'select') {
+                canvas.style.cursor = 'default';
+                selectModeBtn.classList.add('active');
+            } else if (newMode === 'door') {
+                canvas.style.cursor = 'pointer';
+                doorModeBtn.classList.add('active');
+            } else if (newMode === 'window') {
+                canvas.style.cursor = 'pointer';
+                windowModeBtn.classList.add('active');
+            }
             deselectAll();
+        }
+
+        drawModeBtn.addEventListener('click', () => setMode('draw'));
+        selectModeBtn.addEventListener('click', () => setMode('select'));
+        doorModeBtn.addEventListener('click', () => setMode('door'));
+        windowModeBtn.addEventListener('click', () => setMode('window'));
+
+        // Zoom controls
+        zoomInBtn.addEventListener('click', () => {
+            if (currentZoomIndex < gridSizes.length - 1) {
+                currentZoomIndex++;
+                gridSize = gridSizes[currentZoomIndex];
+                zoomLevelSpan.textContent = `Grid: ${gridSize}px`;
+                updateCanvasSize();
+            }
         });
 
-        selectModeBtn.addEventListener('click', () => {
-            mode = 'select';
-            canvas.style.cursor = 'default';
-            selectModeBtn.classList.add('active');
-            drawModeBtn.classList.remove('active');
+        zoomOutBtn.addEventListener('click', () => {
+            if (currentZoomIndex > 0) {
+                currentZoomIndex--;
+                gridSize = gridSizes[currentZoomIndex];
+                zoomLevelSpan.textContent = `Grid: ${gridSize}px`;
+                updateCanvasSize();
+            }
         });
 
         // Mouse down
@@ -249,8 +380,8 @@
 
                 currentBox = document.createElement('div');
                 currentBox.className = 'room-box';
-                currentBox.style.left = startX + 'px';
-                currentBox.style.top = startY + 'px';
+                currentBox.style.left = snapToGrid(startX) + 'px';
+                currentBox.style.top = snapToGrid(startY) + 'px';
                 currentBox.style.width = '0px';
                 currentBox.style.height = '0px';
 
@@ -261,18 +392,29 @@
 
                 canvas.appendChild(currentBox);
             } else if (mode === 'select') {
-                const clickedBox = e.target.closest('.room-box');
-                if (clickedBox) {
-                    selectBox(clickedBox);
+                const clickedRoom = e.target.closest('.room-box');
+                const clickedDoor = e.target.closest('.door');
+                const clickedWindow = e.target.closest('.window');
+
+                if (clickedRoom) {
+                    selectItem(clickedRoom, 'room');
                     if (e.target.classList.contains('resize-handle')) {
                         isResizing = true;
                         resizeHandle = e.target.className.split(' ')[1];
                     } else {
                         isDragging = true;
                     }
+                } else if (clickedDoor) {
+                    selectItem(clickedDoor, 'door');
+                } else if (clickedWindow) {
+                    selectItem(clickedWindow, 'window');
                 } else {
                     deselectAll();
                 }
+            } else if (mode === 'door') {
+                placeDoor(e);
+            } else if (mode === 'window') {
+                placeWindow(e);
             }
         });
 
@@ -283,52 +425,57 @@
             const currentY = e.clientY - rect.top;
 
             if (isDrawing && currentBox) {
-                const width = currentX - startX;
-                const height = currentY - startY;
+                const snappedStartX = parseInt(currentBox.style.left);
+                const snappedStartY = parseInt(currentBox.style.top);
+                const snappedCurrentX = snapToGrid(currentX);
+                const snappedCurrentY = snapToGrid(currentY);
+
+                const width = snappedCurrentX - snappedStartX;
+                const height = snappedCurrentY - snappedStartY;
 
                 currentBox.style.width = Math.abs(width) + 'px';
                 currentBox.style.height = Math.abs(height) + 'px';
 
-                if (width < 0) currentBox.style.left = currentX + 'px';
-                if (height < 0) currentBox.style.top = currentY + 'px';
-            } else if (isDragging && selectedBox) {
+                if (width < 0) currentBox.style.left = snappedCurrentX + 'px';
+                if (height < 0) currentBox.style.top = snappedCurrentY + 'px';
+            } else if (isDragging && selectedItem) {
                 const deltaX = currentX - startX;
                 const deltaY = currentY - startY;
 
-                const left = parseInt(selectedBox.style.left) + deltaX;
-                const top = parseInt(selectedBox.style.top) + deltaY;
+                const left = snapToGrid(parseInt(selectedItem.style.left) + deltaX);
+                const top = snapToGrid(parseInt(selectedItem.style.top) + deltaY);
 
-                selectedBox.style.left = Math.max(0, left) + 'px';
-                selectedBox.style.top = Math.max(0, top) + 'px';
+                selectedItem.style.left = Math.max(0, left) + 'px';
+                selectedItem.style.top = Math.max(0, top) + 'px';
 
                 startX = currentX;
                 startY = currentY;
-            } else if (isResizing && selectedBox) {
-                const box = selectedBox.getBoundingClientRect();
+            } else if (isResizing && selectedItem) {
+                const box = selectedItem.getBoundingClientRect();
                 const canvasRect = canvas.getBoundingClientRect();
                 const relX = box.left - canvasRect.left;
                 const relY = box.top - canvasRect.top;
 
                 if (resizeHandle === 'se') {
-                    selectedBox.style.width = Math.max(40, currentX - relX) + 'px';
-                    selectedBox.style.height = Math.max(40, currentY - relY) + 'px';
+                    selectedItem.style.width = Math.max(gridSize * 2, snapToGrid(currentX - relX)) + 'px';
+                    selectedItem.style.height = Math.max(gridSize * 2, snapToGrid(currentY - relY)) + 'px';
                 } else if (resizeHandle === 'sw') {
-                    const newWidth = Math.max(40, relX + box.width - currentX);
-                    selectedBox.style.width = newWidth + 'px';
-                    selectedBox.style.left = (relX + box.width - newWidth) + 'px';
-                    selectedBox.style.height = Math.max(40, currentY - relY) + 'px';
+                    const newWidth = Math.max(gridSize * 2, snapToGrid(relX + box.width - currentX));
+                    selectedItem.style.width = newWidth + 'px';
+                    selectedItem.style.left = snapToGrid(relX + box.width - newWidth) + 'px';
+                    selectedItem.style.height = Math.max(gridSize * 2, snapToGrid(currentY - relY)) + 'px';
                 } else if (resizeHandle === 'ne') {
-                    selectedBox.style.width = Math.max(40, currentX - relX) + 'px';
-                    const newHeight = Math.max(40, relY + box.height - currentY);
-                    selectedBox.style.height = newHeight + 'px';
-                    selectedBox.style.top = (relY + box.height - newHeight) + 'px';
+                    selectedItem.style.width = Math.max(gridSize * 2, snapToGrid(currentX - relX)) + 'px';
+                    const newHeight = Math.max(gridSize * 2, snapToGrid(relY + box.height - currentY));
+                    selectedItem.style.height = newHeight + 'px';
+                    selectedItem.style.top = snapToGrid(relY + box.height - newHeight) + 'px';
                 } else if (resizeHandle === 'nw') {
-                    const newWidth = Math.max(40, relX + box.width - currentX);
-                    const newHeight = Math.max(40, relY + box.height - currentY);
-                    selectedBox.style.width = newWidth + 'px';
-                    selectedBox.style.height = newHeight + 'px';
-                    selectedBox.style.left = (relX + box.width - newWidth) + 'px';
-                    selectedBox.style.top = (relY + box.height - newHeight) + 'px';
+                    const newWidth = Math.max(gridSize * 2, snapToGrid(relX + box.width - currentX));
+                    const newHeight = Math.max(gridSize * 2, snapToGrid(relY + box.height - currentY));
+                    selectedItem.style.width = newWidth + 'px';
+                    selectedItem.style.height = newHeight + 'px';
+                    selectedItem.style.left = snapToGrid(relX + box.width - newWidth) + 'px';
+                    selectedItem.style.top = snapToGrid(relY + box.height - newHeight) + 'px';
                 }
             }
         });
@@ -336,7 +483,7 @@
         // Mouse up
         document.addEventListener('mouseup', () => {
             if (isDrawing && currentBox) {
-                if (parseInt(currentBox.style.width) < 40 || parseInt(currentBox.style.height) < 40) {
+                if (parseInt(currentBox.style.width) < gridSize * 2 || parseInt(currentBox.style.height) < gridSize * 2) {
                     currentBox.remove();
                 } else {
                     rooms.push(currentBox);
@@ -349,65 +496,183 @@
             resizeHandle = null;
         });
 
-        function selectBox(box) {
-            deselectAll();
-            selectedBox = box;
-            box.classList.add('selected');
+        function placeDoor(e) {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
 
-            // Add resize handles
-            ['nw', 'ne', 'sw', 'se'].forEach(pos => {
-                const handle = document.createElement('div');
-                handle.className = `resize-handle ${pos}`;
-                box.appendChild(handle);
-            });
+            // Find nearest room edge
+            const nearestEdge = findNearestRoomEdge(x, y);
+            if (!nearestEdge) return;
+
+            const door = document.createElement('div');
+            door.className = 'door';
+            const doorWidth = gridSize * 3; // 36" = 3 grid units
+
+            if (nearestEdge.orientation === 'horizontal') {
+                door.classList.add('horizontal');
+                door.style.left = snapToGrid(nearestEdge.x - doorWidth / 2) + 'px';
+                door.style.top = nearestEdge.y + 'px';
+                door.style.width = doorWidth + 'px';
+            } else {
+                door.classList.add('vertical');
+                door.style.left = nearestEdge.x + 'px';
+                door.style.top = snapToGrid(nearestEdge.y - doorWidth / 2) + 'px';
+                door.style.height = doorWidth + 'px';
+            }
+
+            canvas.appendChild(door);
+            doors.push(door);
         }
 
-        function deselectAll() {
-            if (selectedBox) {
-                selectedBox.classList.remove('selected');
-                selectedBox.querySelectorAll('.resize-handle').forEach(h => h.remove());
-                selectedBox = null;
+        function placeWindow(e) {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            const nearestEdge = findNearestRoomEdge(x, y);
+            if (!nearestEdge) return;
+
+            const win = document.createElement('div');
+            win.className = 'window';
+            const windowWidth = gridSize * 4; // 48" default
+
+            if (nearestEdge.orientation === 'horizontal') {
+                win.classList.add('horizontal');
+                win.style.left = snapToGrid(nearestEdge.x - windowWidth / 2) + 'px';
+                win.style.top = nearestEdge.y + 'px';
+                win.style.width = windowWidth + 'px';
+            } else {
+                win.classList.add('vertical');
+                win.style.left = nearestEdge.x + 'px';
+                win.style.top = snapToGrid(nearestEdge.y - windowWidth / 2) + 'px';
+                win.style.height = windowWidth + 'px';
+            }
+
+            canvas.appendChild(win);
+            windows.push(win);
+        }
+
+        function findNearestRoomEdge(x, y) {
+            let nearest = null;
+            let minDist = 30; // Threshold
+
+            rooms.forEach(room => {
+                const left = parseInt(room.style.left);
+                const top = parseInt(room.style.top);
+                const width = parseInt(room.style.width);
+                const height = parseInt(room.style.height);
+
+                // Check all four edges
+                const edges = [
+                    { x: x, y: top, orientation: 'horizontal' }, // Top
+                    { x: x, y: top + height, orientation: 'horizontal' }, // Bottom
+                    { x: left, y: y, orientation: 'vertical' }, // Left
+                    { x: left + width, y: y, orientation: 'vertical' } // Right
+                ];
+
+                edges.forEach(edge => {
+                    const dist = Math.abs(edge.orientation === 'horizontal' ? y - edge.y : x - edge.x);
+                    if (dist < minDist) {
+                        minDist = dist;
+                        nearest = edge;
+                    }
+                });
+            });
+
+            return nearest;
+        }
+
+        function selectItem(item, type) {
+            deselectAll();
+            selectedItem = item;
+            item.classList.add('selected');
+
+            if (type === 'room') {
+                // Add resize handles
+                ['nw', 'ne', 'sw', 'se'].forEach(pos => {
+                    const handle = document.createElement('div');
+                    handle.className = `resize-handle ${pos}`;
+                    item.appendChild(handle);
+                });
             }
         }
 
-        // Delete selected room
+        function deselectAll() {
+            if (selectedItem) {
+                selectedItem.classList.remove('selected');
+                selectedItem.querySelectorAll('.resize-handle').forEach(h => h.remove());
+                selectedItem = null;
+            }
+        }
+
+        // Delete selected item
         deleteBtn.addEventListener('click', () => {
-            if (selectedBox) {
-                selectedBox.remove();
-                rooms = rooms.filter(r => r !== selectedBox);
-                selectedBox = null;
+            if (selectedItem) {
+                selectedItem.remove();
+                rooms = rooms.filter(r => r !== selectedItem);
+                doors = doors.filter(d => d !== selectedItem);
+                windows = windows.filter(w => w !== selectedItem);
+                selectedItem = null;
             }
         });
 
         // Clear all
         clearBtn.addEventListener('click', () => {
-            if (confirm('Clear all rooms?')) {
+            if (confirm('Clear all?')) {
                 rooms.forEach(r => r.remove());
+                doors.forEach(d => d.remove());
+                windows.forEach(w => w.remove());
                 rooms = [];
-                selectedBox = null;
+                doors = [];
+                windows = [];
+                selectedItem = null;
             }
         });
 
         // Save plan
         saveBtn.addEventListener('click', () => {
-            const plan = rooms.map(room => ({
-                label: room.querySelector('.room-label').textContent,
-                left: room.style.left,
-                top: room.style.top,
-                width: room.style.width,
-                height: room.style.height
-            }));
+            const plan = {
+                rooms: rooms.map(room => ({
+                    label: room.querySelector('.room-label').textContent,
+                    left: room.style.left,
+                    top: room.style.top,
+                    width: room.style.width,
+                    height: room.style.height
+                })),
+                doors: doors.map(door => ({
+                    left: door.style.left,
+                    top: door.style.top,
+                    width: door.style.width || '6px',
+                    height: door.style.height || '6px',
+                    orientation: door.classList.contains('horizontal') ? 'horizontal' : 'vertical'
+                })),
+                windows: windows.map(win => ({
+                    left: win.style.left,
+                    top: win.style.top,
+                    width: win.style.width || '6px',
+                    height: win.style.height || '6px',
+                    orientation: win.classList.contains('horizontal') ? 'horizontal' : 'vertical'
+                }))
+            };
 
-            localStorage.setItem('customFloorPlan', JSON.stringify(plan));
-            alert('Floor plan saved! You can now use this in the main app.');
+            localStorage.setItem('customFloorPlan', JSON.stringify(plan.rooms));
+            localStorage.setItem('customDoors', JSON.stringify(plan.doors));
+            localStorage.setItem('customWindows', JSON.stringify(plan.windows));
+            alert('Floor plan saved with doors and windows!');
         });
 
         // Load saved plan
         window.onload = () => {
-            const saved = localStorage.getItem('customFloorPlan');
-            if (saved) {
-                const plan = JSON.parse(saved);
-                plan.forEach(data => {
+            updateCanvasSize();
+
+            const savedRooms = localStorage.getItem('customFloorPlan');
+            const savedDoors = localStorage.getItem('customDoors');
+            const savedWindows = localStorage.getItem('customWindows');
+
+            if (savedRooms) {
+                const roomsData = JSON.parse(savedRooms);
+                roomsData.forEach(data => {
                     const box = document.createElement('div');
                     box.className = 'room-box';
                     box.style.left = data.left;
@@ -422,6 +687,42 @@
 
                     canvas.appendChild(box);
                     rooms.push(box);
+                });
+            }
+
+            if (savedDoors) {
+                const doorsData = JSON.parse(savedDoors);
+                doorsData.forEach(data => {
+                    const door = document.createElement('div');
+                    door.className = 'door';
+                    door.classList.add(data.orientation);
+                    door.style.left = data.left;
+                    door.style.top = data.top;
+                    if (data.orientation === 'horizontal') {
+                        door.style.width = data.width;
+                    } else {
+                        door.style.height = data.height;
+                    }
+                    canvas.appendChild(door);
+                    doors.push(door);
+                });
+            }
+
+            if (savedWindows) {
+                const windowsData = JSON.parse(savedWindows);
+                windowsData.forEach(data => {
+                    const win = document.createElement('div');
+                    win.className = 'window';
+                    win.classList.add(data.orientation);
+                    win.style.left = data.left;
+                    win.style.top = data.top;
+                    if (data.orientation === 'horizontal') {
+                        win.style.width = data.width;
+                    } else {
+                        win.style.height = data.height;
+                    }
+                    canvas.appendChild(win);
+                    windows.push(win);
                 });
             }
         };
