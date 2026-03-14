@@ -215,106 +215,147 @@ function drawFloorPlan() {
     // Clear any existing content
     plan.innerHTML = '';
 
-    // Living Room / Dining Area (open concept) - Corner unit
-    const livingRoom = document.createElement('div');
-    livingRoom.className = 'room';
-    livingRoom.style.left = '0px';
-    livingRoom.style.top = '0px';
-    livingRoom.style.width = '500px';
-    livingRoom.style.height = '400px';
-    livingRoom.innerHTML = '<div class="room-label">LIVING / DINING ROOM</div>';
-    plan.appendChild(livingRoom);
+    // Add buffer margin (20px from edges)
+    const margin = 20;
 
-    // Windows on two walls (corner unit)
-    const window1 = document.createElement('div');
-    window1.className = 'window';
-    window1.style.left = '0px';
-    window1.style.top = '50px';
-    window1.style.width = '10px';
-    window1.style.height = '300px';
-    plan.appendChild(window1);
-
-    const window2 = document.createElement('div');
-    window2.className = 'window';
-    window2.style.left = '50px';
-    window2.style.top = '390px';
-    window2.style.width = '400px';
-    window2.style.height = '10px';
-    plan.appendChild(window2);
-
-    // Kitchen
-    const kitchen = document.createElement('div');
-    kitchen.className = 'room';
-    kitchen.style.left = '500px';
-    kitchen.style.top = '0px';
-    kitchen.style.width = '250px';
-    kitchen.style.height = '200px';
-    kitchen.innerHTML = '<div class="room-label">KITCHEN</div>';
-    plan.appendChild(kitchen);
-
-    // Entry Hallway
+    // Entry area - bottom left when you walk in
     const entry = document.createElement('div');
     entry.className = 'room';
-    entry.style.left = '500px';
-    entry.style.top = '200px';
-    entry.style.width = '250px';
+    entry.style.left = margin + 'px';
+    entry.style.top = (500 + margin) + 'px';
+    entry.style.width = '150px';
     entry.style.height = '100px';
     entry.innerHTML = '<div class="room-label">ENTRY</div>';
     plan.appendChild(entry);
 
-    // Entry Door
-    const door1 = document.createElement('div');
-    door1.className = 'door';
-    door1.style.left = '745px';
-    door1.style.top = '240px';
-    door1.style.width = '5px';
-    door1.style.height = '40px';
-    plan.appendChild(door1);
+    // Entry Door (on bottom wall)
+    const entryDoor = document.createElement('div');
+    entryDoor.className = 'door';
+    entryDoor.style.left = (margin + 60) + 'px';
+    entryDoor.style.top = (595 + margin) + 'px';
+    entryDoor.style.width = '40px';
+    entryDoor.style.height = '5px';
+    plan.appendChild(entryDoor);
 
-    // Bathroom
-    const bathroom = document.createElement('div');
-    bathroom.className = 'room';
-    bathroom.style.left = '500px';
-    bathroom.style.top = '300px';
-    bathroom.style.width = '150px';
-    bathroom.style.height = '150px';
-    bathroom.innerHTML = '<div class="room-label">BATHROOM</div>';
-    plan.appendChild(bathroom);
+    // Kitchen - to the RIGHT of entry (U-shaped)
+    const kitchen = document.createElement('div');
+    kitchen.className = 'room';
+    kitchen.style.left = (190 + margin) + 'px';
+    kitchen.style.top = (400 + margin) + 'px';
+    kitchen.style.width = '200px';
+    kitchen.style.height = '200px';
+    kitchen.innerHTML = '<div class="room-label">KITCHEN (U-shaped)</div>';
+    plan.appendChild(kitchen);
 
-    // Bedroom
+    // Living/Dining Room - in FRONT of kitchen (right side of U, corner unit)
+    const livingRoom = document.createElement('div');
+    livingRoom.className = 'room';
+    livingRoom.style.left = (190 + margin) + 'px';
+    livingRoom.style.top = margin + 'px';
+    livingRoom.style.width = '380px';
+    livingRoom.style.height = '380px';
+    livingRoom.innerHTML = '<div class="room-label">LIVING / DINING ROOM</div>';
+    plan.appendChild(livingRoom);
+
+    // Corner unit windows (top and right walls)
+    const windowTop = document.createElement('div');
+    windowTop.className = 'window';
+    windowTop.style.left = (240 + margin) + 'px';
+    windowTop.style.top = margin + 'px';
+    windowTop.style.width = '280px';
+    windowTop.style.height = '10px';
+    plan.appendChild(windowTop);
+
+    const windowRight = document.createElement('div');
+    windowRight.className = 'window';
+    windowRight.style.left = (560 + margin) + 'px';
+    windowRight.style.top = (50 + margin) + 'px';
+    windowRight.style.width = '10px';
+    windowRight.style.height = '280px';
+    plan.appendChild(windowRight);
+
+    // Hallway area - walk forward from entry, doorway to left
+    const hallway = document.createElement('div');
+    hallway.className = 'room';
+    hallway.style.left = margin + 'px';
+    hallway.style.top = (380 + margin) + 'px';
+    hallway.style.width = '170px';
+    hallway.style.height = '100px';
+    hallway.style.background = '#f0f0f0';
+    hallway.innerHTML = '<div class="room-label">HALLWAY</div>';
+    plan.appendChild(hallway);
+
+    // Bedroom - straight ahead through hallway doorway
     const bedroom = document.createElement('div');
     bedroom.className = 'room';
-    bedroom.style.left = '0px';
-    bedroom.style.top = '400px';
-    bedroom.style.width = '500px';
-    bedroom.style.height = '250px';
+    bedroom.style.left = margin + 'px';
+    bedroom.style.top = margin + 'px';
+    bedroom.style.width = '170px';
+    bedroom.style.height = '260px';
     bedroom.innerHTML = '<div class="room-label">BEDROOM</div>';
     plan.appendChild(bedroom);
 
-    // Bedroom window
-    const window3 = document.createElement('div');
-    window3.className = 'window';
-    window3.style.left = '150px';
-    window3.style.top = '640px';
-    window3.style.width = '200px';
-    window3.style.height = '10px';
-    plan.appendChild(window3);
+    // Bedroom door
+    const bedroomDoor = document.createElement('div');
+    bedroomDoor.className = 'door';
+    bedroomDoor.style.left = (80 + margin) + 'px';
+    bedroomDoor.style.top = (255 + margin) + 'px';
+    bedroomDoor.style.width = '5px';
+    bedroomDoor.style.height = '40px';
+    plan.appendChild(bedroomDoor);
 
-    // Closet
-    const closet = document.createElement('div');
-    closet.className = 'room';
-    closet.style.left = '650px';
-    closet.style.top = '300px';
-    closet.style.width = '100px';
-    closet.style.height = '150px';
-    closet.style.background = '#e0e0e0';
-    closet.innerHTML = '<div class="room-label">CLOSET</div>';
-    plan.appendChild(closet);
+    // Bedroom window
+    const bedroomWindow = document.createElement('div');
+    bedroomWindow.className = 'window';
+    bedroomWindow.style.left = (40 + margin) + 'px';
+    bedroomWindow.style.top = margin + 'px';
+    bedroomWindow.style.width = '100px';
+    bedroomWindow.style.height = '10px';
+    plan.appendChild(bedroomWindow);
+
+    // Bathroom - to the LEFT of bedroom door (in hallway area)
+    const bathroom = document.createElement('div');
+    bathroom.className = 'room';
+    bathroom.style.left = margin + 'px';
+    bathroom.style.top = (280 + margin) + 'px';
+    bathroom.style.width = '80px';
+    bathroom.style.height = '80px';
+    bathroom.innerHTML = '<div class="room-label">BATH</div>';
+    plan.appendChild(bathroom);
+
+    // Bathroom door
+    const bathroomDoor = document.createElement('div');
+    bathroomDoor.className = 'door';
+    bathroomDoor.style.left = (35 + margin) + 'px';
+    bathroomDoor.style.top = (355 + margin) + 'px';
+    bathroomDoor.style.width = '5px';
+    bathroomDoor.style.height = '30px';
+    plan.appendChild(bathroomDoor);
+
+    // Laundry - to the LEFT of bathroom door
+    const laundry = document.createElement('div');
+    laundry.className = 'room';
+    laundry.style.left = (100 + margin) + 'px';
+    laundry.style.top = (280 + margin) + 'px';
+    laundry.style.width = '70px';
+    laundry.style.height = '80px';
+    laundry.style.background = '#e8e8e8';
+    laundry.innerHTML = '<div class="room-label">LAUNDRY</div>';
+    plan.appendChild(laundry);
+
+    // Laundry door
+    const laundryDoor = document.createElement('div');
+    laundryDoor.className = 'door';
+    laundryDoor.style.left = (115 + margin) + 'px';
+    laundryDoor.style.top = (355 + margin) + 'px';
+    laundryDoor.style.width = '5px';
+    laundryDoor.style.height = '30px';
+    plan.appendChild(laundryDoor);
 
     // Add measurement grid markers (every 5ft ≈ 60px)
     const gridSize = 60; // pixels per 5ft
-    const maxWidth = 750;
-    const maxHeight = 650;
+    const maxWidth = 590;
+    const maxHeight = 620;
 
     // Horizontal measurement markers
     for (let x = gridSize; x < maxWidth; x += gridSize) {
@@ -410,11 +451,12 @@ function drag(e) {
 
     // Apartment boundaries (exterior walls only - no room restrictions)
     // Can place any furniture anywhere inside the apartment
+    // Updated to match new floor plan with 20px margin/buffer
     const apartmentBounds = {
-        left: 0,
-        top: 0,
-        right: 750,  // Right wall of apartment
-        bottom: 650  // Bottom wall of apartment
+        left: 20,  // Left buffer
+        top: 20,   // Top buffer
+        right: 590,  // Right wall of apartment
+        bottom: 620  // Bottom wall of apartment
     };
 
     // Keep furniture inside apartment walls (can't go outside)

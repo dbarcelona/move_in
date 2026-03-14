@@ -314,11 +314,12 @@ header p {
     position: absolute;
     font-weight: bold;
     color: #666;
-    font-size: 0.85em;
+    font-size: 0.75em;
     pointer-events: none;
     text-align: center;
     width: 100%;
-    top: 5px;
+    top: 3px;
+    line-height: 1.2;
 }
 
 .window {
