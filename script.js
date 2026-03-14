@@ -6,6 +6,7 @@ let tasks = [];
 // localStorage is browser storage that persists even after closing the page
 window.onload = function() {
     loadTasks();
+    drawFloorPlan();
     loadFurniture();
     renderTasks();
 };
@@ -179,43 +180,152 @@ function loadTasks() {
 
 // ==================== SPACE PLANNER FUNCTIONS ====================
 
-let furnitureItems = [];
 let draggedElement = null;
 let offsetX = 0;
 let offsetY = 0;
 
-// Function to add furniture to the room
-function addFurniture(type) {
-    const canvas = document.getElementById('room-canvas');
+// Draw the floor plan based on 1 Lakeside Dr #804
+function drawFloorPlan() {
+    const plan = document.getElementById('room-canvas');
 
-    // Create a new furniture element
+    // Living Room / Dining Area (open concept) - Corner unit
+    const livingRoom = document.createElement('div');
+    livingRoom.className = 'room';
+    livingRoom.style.left = '0px';
+    livingRoom.style.top = '0px';
+    livingRoom.style.width = '500px';
+    livingRoom.style.height = '400px';
+    livingRoom.innerHTML = '<div class="room-label">LIVING / DINING ROOM</div>';
+    plan.appendChild(livingRoom);
+
+    // Windows on two walls (corner unit)
+    const window1 = document.createElement('div');
+    window1.className = 'window';
+    window1.style.left = '0px';
+    window1.style.top = '50px';
+    window1.style.width = '10px';
+    window1.style.height = '300px';
+    plan.appendChild(window1);
+
+    const window2 = document.createElement('div');
+    window2.className = 'window';
+    window2.style.left = '50px';
+    window2.style.top = '390px';
+    window2.style.width = '400px';
+    window2.style.height = '10px';
+    plan.appendChild(window2);
+
+    // Kitchen
+    const kitchen = document.createElement('div');
+    kitchen.className = 'room';
+    kitchen.style.left = '500px';
+    kitchen.style.top = '0px';
+    kitchen.style.width = '250px';
+    kitchen.style.height = '200px';
+    kitchen.innerHTML = '<div class="room-label">KITCHEN</div>';
+    plan.appendChild(kitchen);
+
+    // Entry Hallway
+    const entry = document.createElement('div');
+    entry.className = 'room';
+    entry.style.left = '500px';
+    entry.style.top = '200px';
+    entry.style.width = '250px';
+    entry.style.height = '100px';
+    entry.innerHTML = '<div class="room-label">ENTRY</div>';
+    plan.appendChild(entry);
+
+    // Entry Door
+    const door1 = document.createElement('div');
+    door1.className = 'door';
+    door1.style.left = '745px';
+    door1.style.top = '240px';
+    door1.style.width = '5px';
+    door1.style.height = '40px';
+    plan.appendChild(door1);
+
+    // Bathroom
+    const bathroom = document.createElement('div');
+    bathroom.className = 'room';
+    bathroom.style.left = '500px';
+    bathroom.style.top = '300px';
+    bathroom.style.width = '150px';
+    bathroom.style.height = '150px';
+    bathroom.innerHTML = '<div class="room-label">BATHROOM</div>';
+    plan.appendChild(bathroom);
+
+    // Bedroom
+    const bedroom = document.createElement('div');
+    bedroom.className = 'room';
+    bedroom.style.left = '0px';
+    bedroom.style.top = '400px';
+    bedroom.style.width = '500px';
+    bedroom.style.height = '250px';
+    bedroom.innerHTML = '<div class="room-label">BEDROOM</div>';
+    plan.appendChild(bedroom);
+
+    // Bedroom window
+    const window3 = document.createElement('div');
+    window3.className = 'window';
+    window3.style.left = '150px';
+    window3.style.top = '640px';
+    window3.style.width = '200px';
+    window3.style.height = '10px';
+    plan.appendChild(window3);
+
+    // Closet
+    const closet = document.createElement('div');
+    closet.className = 'room';
+    closet.style.left = '650px';
+    closet.style.top = '300px';
+    closet.style.width = '100px';
+    closet.style.height = '150px';
+    closet.style.background = '#e0e0e0';
+    closet.innerHTML = '<div class="room-label">CLOSET</div>';
+    plan.appendChild(closet);
+}
+
+// Function to add furniture with specified dimensions
+function addFurniture(type, width, height) {
+    const plan = document.getElementById('room-canvas');
     const furniture = document.createElement('div');
     furniture.className = 'furniture-item';
-    furniture.textContent = getFurnitureIcon(type);
+    furniture.textContent = getFurnitureLabel(type);
+    furniture.style.width = width + 'px';
+    furniture.style.height = height + 'px';
 
     // Random starting position
-    furniture.style.left = Math.random() * 400 + 'px';
-    furniture.style.top = Math.random() * 300 + 'px';
+    furniture.style.left = (Math.random() * (plan.offsetWidth - width)) + 'px';
+    furniture.style.top = (Math.random() * (plan.offsetHeight - height)) + 'px';
 
     // Make it draggable
     furniture.addEventListener('mousedown', startDrag);
 
-    canvas.appendChild(furniture);
+    // Double-click to remove
+    furniture.addEventListener('dblclick', function() {
+        this.remove();
+        saveFurniture();
+    });
 
-    // Save furniture position
-    saveFurnitureState();
+    plan.appendChild(furniture);
+    saveFurniture();
 }
 
-// Get icon for furniture type
-function getFurnitureIcon(type) {
-    const icons = {
+// Get furniture label with icon
+function getFurnitureLabel(type) {
+    const labels = {
         'bed': '🛏️ Bed',
         'sofa': '🛋️ Sofa',
-        'table': '🪑 Table',
+        'loveseat': '🪑 Loveseat',
+        'table': '🍽️ Table',
         'desk': '🖥️ Desk',
-        'shelf': '📚 Shelf'
+        'chair': '💺 Chair',
+        'tv': '📺 TV',
+        'bookshelf': '📚 Shelf',
+        'nightstand': '🛏️ Stand',
+        'dresser': '👔 Dresser'
     };
-    return icons[type] || '📦 Item';
+    return labels[type] || '📦 Item';
 }
 
 // Start dragging furniture
@@ -264,46 +374,54 @@ function stopDrag() {
     }
 }
 
-// Clear all furniture from room
+// Clear all furniture from room (keeps floor plan)
 function clearRoom() {
-    if (confirm('Are you sure you want to clear the room?')) {
-        document.getElementById('room-canvas').innerHTML = '';
-        saveFurnitureState();
+    if (confirm('Remove all furniture? The floor plan will remain.')) {
+        const items = document.querySelectorAll('.furniture-item');
+        items.forEach(item => item.remove());
+        saveFurniture();
     }
 }
 
 // Save furniture positions to localStorage
-function saveFurnitureState() {
-    const canvas = document.getElementById('room-canvas');
-    const items = canvas.querySelectorAll('.furniture-item');
-    const furnitureData = [];
+function saveFurniture() {
+    const items = document.querySelectorAll('.furniture-item');
+    const data = [];
 
     items.forEach(item => {
-        furnitureData.push({
+        data.push({
             text: item.textContent,
             left: item.style.left,
-            top: item.style.top
+            top: item.style.top,
+            width: item.style.width,
+            height: item.style.height
         });
     });
 
-    localStorage.setItem('furnitureLayout', JSON.stringify(furnitureData));
+    localStorage.setItem('lakesideFurniture', JSON.stringify(data));
 }
 
 // Load furniture from localStorage
 function loadFurniture() {
-    const saved = localStorage.getItem('furnitureLayout');
+    const saved = localStorage.getItem('lakesideFurniture');
     if (saved) {
-        const furnitureData = JSON.parse(saved);
-        const canvas = document.getElementById('room-canvas');
+        const data = JSON.parse(saved);
+        const plan = document.getElementById('room-canvas');
 
-        furnitureData.forEach(item => {
+        data.forEach(item => {
             const furniture = document.createElement('div');
             furniture.className = 'furniture-item';
             furniture.textContent = item.text;
             furniture.style.left = item.left;
             furniture.style.top = item.top;
+            furniture.style.width = item.width;
+            furniture.style.height = item.height;
             furniture.addEventListener('mousedown', startDrag);
-            canvas.appendChild(furniture);
+            furniture.addEventListener('dblclick', function() {
+                this.remove();
+                saveFurniture();
+            });
+            plan.appendChild(furniture);
         });
     }
 }

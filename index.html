@@ -10,8 +10,7 @@
     <div class="container">
         <header>
             <h1>🏠 Lakeside Move-In Tracker</h1>
-            <p>Oakland, California</p>
-            <p style="margin-top: 10px;"><a href="planner.html" style="color: #667eea; text-decoration: none; font-weight: bold;">📐 View Detailed Floor Plan (1 Lakeside Dr #804)</a></p>
+            <p>1 Lakeside Dr #804 • Oakland, CA • 917 sq ft</p>
         </header>
 
         <!-- Navigation Tabs -->
@@ -58,19 +57,32 @@
         <!-- Space Planner Section -->
         <div id="planner-section" class="tab-content">
             <div class="planner-controls">
-                <h2>Space Planner</h2>
-                <p>Click and drag items to plan your layout</p>
+                <h2>Floor Plan & Furniture Planner</h2>
+                <p style="color: #666; margin-bottom: 15px;">Drag furniture to plan your space • Double-click to remove items</p>
                 <div class="furniture-palette">
-                    <button onclick="addFurniture('bed')">🛏️ Bed</button>
-                    <button onclick="addFurniture('sofa')">🛋️ Sofa</button>
-                    <button onclick="addFurniture('table')">🪑 Table</button>
-                    <button onclick="addFurniture('desk')">🖥️ Desk</button>
-                    <button onclick="addFurniture('shelf')">📚 Shelf</button>
-                    <button onclick="clearRoom()">🗑️ Clear Room</button>
+                    <button onclick="addFurniture('bed', 120, 80)">🛏️ Queen Bed</button>
+                    <button onclick="addFurniture('sofa', 90, 40)">🛋️ Sofa</button>
+                    <button onclick="addFurniture('loveseat', 70, 40)">🪑 Loveseat</button>
+                    <button onclick="addFurniture('table', 60, 40)">🍽️ Dining Table</button>
+                    <button onclick="addFurniture('desk', 50, 30)">🖥️ Desk</button>
+                    <button onclick="addFurniture('chair', 30, 30)">💺 Chair</button>
+                    <button onclick="addFurniture('tv', 50, 10)">📺 TV Stand</button>
+                    <button onclick="addFurniture('bookshelf', 40, 15)">📚 Bookshelf</button>
+                    <button onclick="addFurniture('nightstand', 25, 20)">🛏️ Nightstand</button>
+                    <button onclick="addFurniture('dresser', 50, 25)">👔 Dresser</button>
+                    <button onclick="clearRoom()" style="background: #ff6b6b;">🗑️ Clear All</button>
                 </div>
             </div>
-            <div class="room-canvas" id="room-canvas">
-                <!-- Furniture items will be placed here -->
+            <div class="floor-plan-container">
+                <div id="room-canvas">
+                    <!-- Floor plan and furniture will be placed here -->
+                </div>
+            </div>
+            <div class="legend">
+                <strong>Legend:</strong>
+                <span class="legend-item"><span class="legend-window"></span> Windows</span>
+                <span class="legend-item"><span class="legend-door"></span> Doors</span>
+                <span class="legend-item"><span class="legend-wall"></span> Walls</span>
             </div>
         </div>
     </div>
