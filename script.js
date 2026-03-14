@@ -195,11 +195,34 @@ let offsetY = 0;
 function drawFloorPlan() {
     const plan = document.getElementById('room-canvas');
 
+    // Debug: Check if element exists
+    if (!plan) {
+        console.error('room-canvas element not found!');
+        return;
+    }
+
     // Prevent double-drawing
     if (floorPlanDrawn) return;
 
     // Clear any existing content
     plan.innerHTML = '';
+
+    // Debug marker - remove after testing
+    console.log('Drawing floor plan...');
+
+    // VISIBLE DEBUG TEST - Big red box to confirm function runs
+    const testBox = document.createElement('div');
+    testBox.style.position = 'absolute';
+    testBox.style.left = '10px';
+    testBox.style.top = '10px';
+    testBox.style.width = '200px';
+    testBox.style.height = '100px';
+    testBox.style.background = 'red';
+    testBox.style.color = 'white';
+    testBox.style.padding = '20px';
+    testBox.style.zIndex = '999';
+    testBox.textContent = 'FLOOR PLAN FUNCTION RUNNING';
+    plan.appendChild(testBox);
 
     // Living Room / Dining Area (open concept) - Corner unit
     const livingRoom = document.createElement('div');
