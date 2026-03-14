@@ -21,8 +21,8 @@ A web-based tool to help manage moving tasks and plan your new space in Oakland'
 ## How to Use
 
 ### Opening the App
-1. Navigate to `/home/duncancb/dev/move_in/`
-2. Double-click `index.html` or open it with any web browser
+1. Open the project folder
+2. Double-click `index.html` to open in any web browser
 3. That's it! No server needed.
 
 ### Managing Tasks
