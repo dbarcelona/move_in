@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1 Lakeside Dr #804 - Floor Plan</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        header h1 {
+            color: #333;
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+
+        header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .controls {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .furniture-palette {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .furniture-palette button {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background 0.3s;
+        }
+
+        .furniture-palette button:hover {
+            background: #5568d3;
+        }
+
+        .furniture-palette button.danger {
+            background: #ff6b6b;
+        }
+
+        .furniture-palette button.danger:hover {
+            background: #ff5252;
+        }
+
+        .floor-plan-container {
+            position: relative;
+            background: #fff;
+            border: 3px solid #667eea;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        #floor-plan {
+            position: relative;
+            width: 100%;
+            height: 700px;
+            background: #f5f5f5;
+        }
+
+        .room {
+            position: absolute;
+            border: 2px solid #333;
+            background: white;
+        }
+
+        .room-label {
+            position: absolute;
+            font-weight: bold;
+            color: #666;
+            font-size: 0.9em;
+            pointer-events: none;
+            text-align: center;
+            width: 100%;
+            top: 5px;
+        }
+
+        .window {
+            position: absolute;
+            background: linear-gradient(90deg, #87CEEB 0%, #B0E0E6 100%);
+            border: 2px solid #4682B4;
+        }
+
+        .door {
+            position: absolute;
+            background: #8B4513;
+            border: 1px solid #654321;
+        }
+
+        .furniture-item {
+            position: absolute;
+            padding: 10px 15px;
+            background: #667eea;
+            color: white;
+            border-radius: 6px;
+            cursor: move;
+            font-size: 0.9em;
+            user-select: none;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: transform 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .furniture-item:hover {
+            transform: scale(1.05);
+        }
+
+        .furniture-item:active {
+            cursor: grabbing;
+        }
+
+        .legend {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            font-size: 0.9em;
+        }
+
+        .legend-item {
+            display: inline-block;
+            margin-right: 20px;
+            margin-bottom: 5px;
+        }
+
+        .legend-item span {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            margin-right: 5px;
+            vertical-align: middle;
+            border: 1px solid #333;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: background 0.3s;
+        }
+
+        .back-link:hover {
+            background: #5568d3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">← Back to To-Do List</a>
+
+        <header>
+            <h1>1 Lakeside Dr #804 Floor Plan</h1>
+            <p>917 sq ft • 1 Bed • 1 Bath • Corner Unit</p>
+        </header>
+
+        <div class="controls">
+            <h3 style="margin-bottom: 15px;">Add Furniture</h3>
+            <div class="furniture-palette">
+                <button onclick="addFurniture('bed', 120, 80)">🛏️ Queen Bed</button>
+                <button onclick="addFurniture('sofa', 90, 40)">🛋️ Sofa</button>
+                <button onclick="addFurniture('loveseat', 70, 40)">🪑 Loveseat</button>
+                <button onclick="addFurniture('table', 60, 40)">🍽️ Dining Table</button>
+                <button onclick="addFurniture('desk', 50, 30)">🖥️ Desk</button>
+                <button onclick="addFurniture('chair', 30, 30)">💺 Chair</button>
+                <button onclick="addFurniture('tv', 50, 10)">📺 TV Stand</button>
+                <button onclick="addFurniture('bookshelf', 40, 15)">📚 Bookshelf</button>
+                <button onclick="addFurniture('nightstand', 25, 20)">🛏️ Nightstand</button>
+                <button onclick="addFurniture('dresser', 50, 25)">👔 Dresser</button>
+                <button class="danger" onclick="clearFurniture()">🗑️ Clear All</button>
+            </div>
+            <p style="color: #666; font-size: 0.9em; margin-top: 10px;">
+                💡 Tip: Drag furniture to arrange your space. Sizes are approximate based on standard dimensions.
+            </p>
+        </div>
+
+        <div class="floor-plan-container">
+            <div id="floor-plan">
+                <!-- Floor plan will be drawn here -->
+            </div>
+        </div>
+
+        <div class="legend">
+            <strong>Legend:</strong>
+            <div class="legend-item">
+                <span style="background: linear-gradient(90deg, #87CEEB 0%, #B0E0E6 100%); border-color: #4682B4;"></span>
+                Windows
+            </div>
+            <div class="legend-item">
+                <span style="background: #8B4513; border-color: #654321;"></span>
+                Doors
+            </div>
+            <div class="legend-item">
+                <span style="background: white; border-color: #333;"></span>
+                Walls
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Draw the floor plan based on photos of 1 Lakeside Dr #804
+        function drawFloorPlan() {
+            const plan = document.getElementById('floor-plan');
+            const width = plan.offsetWidth;
+            const height = plan.offsetHeight;
+
+            // Scale factor (917 sq ft total)
+            const scale = 1;
+
+            // Living Room / Dining Area (open concept) - Corner unit with windows on 2 walls
+            const livingRoom = document.createElement('div');
+            livingRoom.className = 'room';
+            livingRoom.style.left = '0px';
+            livingRoom.style.top = '0px';
+            livingRoom.style.width = '500px';
+            livingRoom.style.height = '400px';
+            livingRoom.innerHTML = '<div class="room-label">LIVING / DINING ROOM</div>';
+            plan.appendChild(livingRoom);
+
+            // Windows on two walls (corner unit)
+            // Left wall windows
+            const window1 = document.createElement('div');
+            window1.className = 'window';
+            window1.style.left = '0px';
+            window1.style.top = '50px';
+            window1.style.width = '10px';
+            window1.style.height = '300px';
+            plan.appendChild(window1);
+
+            // Bottom wall windows
+            const window2 = document.createElement('div');
+            window2.className = 'window';
+            window2.style.left = '50px';
+            window2.style.top = '390px';
+            window2.style.width = '400px';
+            window2.style.height = '10px';
+            plan.appendChild(window2);
+
+            // Kitchen (with peninsula)
+            const kitchen = document.createElement('div');
+            kitchen.className = 'room';
+            kitchen.style.left = '500px';
+            kitchen.style.top = '0px';
+            kitchen.style.width = '250px';
+            kitchen.style.height = '200px';
+            kitchen.innerHTML = '<div class="room-label">KITCHEN</div>';
+            plan.appendChild(kitchen);
+
+            // Entry Hallway
+            const entry = document.createElement('div');
+            entry.className = 'room';
+            entry.style.left = '500px';
+            entry.style.top = '200px';
+            entry.style.width = '250px';
+            entry.style.height = '100px';
+            entry.innerHTML = '<div class="room-label">ENTRY</div>';
+            plan.appendChild(entry);
+
+            // Entry Door
+            const door1 = document.createElement('div');
+            door1.className = 'door';
+            door1.style.left = '745px';
+            door1.style.top = '240px';
+            door1.style.width = '5px';
+            door1.style.height = '40px';
+            plan.appendChild(door1);
+
+            // Bathroom
+            const bathroom = document.createElement('div');
+            bathroom.className = 'room';
+            bathroom.style.left = '500px';
+            bathroom.style.top = '300px';
+            bathroom.style.width = '150px';
+            bathroom.style.height = '150px';
+            bathroom.innerHTML = '<div class="room-label">BATHROOM</div>';
+            plan.appendChild(bathroom);
+
+            // Bedroom
+            const bedroom = document.createElement('div');
+            bedroom.className = 'room';
+            bedroom.style.left = '0px';
+            bedroom.style.top = '400px';
+            bedroom.style.width = '500px';
+            bedroom.style.height = '250px';
+            bedroom.innerHTML = '<div class="room-label">BEDROOM</div>';
+            plan.appendChild(bedroom);
+
+            // Bedroom window
+            const window3 = document.createElement('div');
+            window3.className = 'window';
+            window3.style.left = '150px';
+            window3.style.top = '640px';
+            window3.style.width = '200px';
+            window3.style.height = '10px';
+            plan.appendChild(window3);
+
+            // Closet
+            const closet = document.createElement('div');
+            closet.className = 'room';
+            closet.style.left = '650px';
+            closet.style.top = '300px';
+            closet.style.width = '100px';
+            closet.style.height = '150px';
+            closet.style.background = '#e0e0e0';
+            closet.innerHTML = '<div class="room-label">CLOSET</div>';
+            plan.appendChild(closet);
+        }
+
+        // Furniture dragging functionality
+        let draggedElement = null;
+        let offsetX = 0;
+        let offsetY = 0;
+
+        function addFurniture(type, width, height) {
+            const plan = document.getElementById('floor-plan');
+            const furniture = document.createElement('div');
+            furniture.className = 'furniture-item';
+            furniture.textContent = getFurnitureLabel(type);
+            furniture.style.width = width + 'px';
+            furniture.style.height = height + 'px';
+            furniture.style.left = (Math.random() * (plan.offsetWidth - width)) + 'px';
+            furniture.style.top = (Math.random() * (plan.offsetHeight - height)) + 'px';
+            furniture.addEventListener('mousedown', startDrag);
+            furniture.addEventListener('dblclick', function() {
+                this.remove();
+                saveFurniture();
+            });
+            plan.appendChild(furniture);
+            saveFurniture();
+        }
+
+        function getFurnitureLabel(type) {
+            const labels = {
+                'bed': '🛏️ Bed',
+                'sofa': '🛋️ Sofa',
+                'loveseat': '🪑 Loveseat',
+                'table': '🍽️ Table',
+                'desk': '🖥️ Desk',
+                'chair': '💺 Chair',
+                'tv': '📺 TV',
+                'bookshelf': '📚 Shelf',
+                'nightstand': '🛏️ Stand',
+                'dresser': '👔 Dresser'
+            };
+            return labels[type] || '📦 Item';
+        }
+
+        function startDrag(e) {
+            draggedElement = e.target;
+            const rect = draggedElement.getBoundingClientRect();
+            const planRect = document.getElementById('floor-plan').getBoundingClientRect();
+            offsetX = e.clientX - rect.left;
+            offsetY = e.clientY - rect.top;
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', stopDrag);
+        }
+
+        function drag(e) {
+            if (!draggedElement) return;
+            const plan = document.getElementById('floor-plan');
+            const planRect = plan.getBoundingClientRect();
+            let newX = e.clientX - planRect.left - offsetX;
+            let newY = e.clientY - planRect.top - offsetY;
+            newX = Math.max(0, Math.min(newX, planRect.width - draggedElement.offsetWidth));
+            newY = Math.max(0, Math.min(newY, planRect.height - draggedElement.offsetHeight));
+            draggedElement.style.left = newX + 'px';
+            draggedElement.style.top = newY + 'px';
+        }
+
+        function stopDrag() {
+            document.removeEventListener('mousemove', drag);
+            document.removeEventListener('mouseup', stopDrag);
+            if (draggedElement) {
+                saveFurniture();
+                draggedElement = null;
+            }
+        }
+
+        function clearFurniture() {
+            if (confirm('Remove all furniture? The floor plan will remain.')) {
+                const items = document.querySelectorAll('.furniture-item');
+                items.forEach(item => item.remove());
+                saveFurniture();
+            }
+        }
+
+        function saveFurniture() {
+            const items = document.querySelectorAll('.furniture-item');
+            const data = [];
+            items.forEach(item => {
+                data.push({
+                    text: item.textContent,
+                    left: item.style.left,
+                    top: item.style.top,
+                    width: item.style.width,
+                    height: item.style.height
+                });
+            });
+            localStorage.setItem('lakesideFurniture', JSON.stringify(data));
+        }
+
+        function loadFurniture() {
+            const saved = localStorage.getItem('lakesideFurniture');
+            if (saved) {
+                const data = JSON.parse(saved);
+                const plan = document.getElementById('floor-plan');
+                data.forEach(item => {
+                    const furniture = document.createElement('div');
+                    furniture.className = 'furniture-item';
+                    furniture.textContent = item.text;
+                    furniture.style.left = item.left;
+                    furniture.style.top = item.top;
+                    furniture.style.width = item.width;
+                    furniture.style.height = item.height;
+                    furniture.addEventListener('mousedown', startDrag);
+                    furniture.addEventListener('dblclick', function() {
+                        this.remove();
+                        saveFurniture();
+                    });
+                    plan.appendChild(furniture);
+                });
+            }
+        }
+
+        // Initialize
+        window.onload = function() {
+            drawFloorPlan();
+            loadFurniture();
+        };
+    </script>
+</body>
+</html>
